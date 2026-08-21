@@ -5,6 +5,7 @@ import { heroImage, ABOUT_IMAGE_URL } from '../assets/profileImage';
 import { Cyber3DScrollCanvas } from './Cyber3DScrollCanvas';
 import { RevealOnScroll } from './RevealOnScroll';
 import { InteractiveTerminal } from './InteractiveTerminal';
+import { KineticText, ScrambleHeading } from './KineticTypography';
 import { 
   Shield, 
   Terminal, 
@@ -810,29 +811,47 @@ export const CyberSodaLayout: React.FC = () => {
                 </div>
               </RevealOnScroll>
 
-              {/* Bold Modern Executive Headline */}
+              {/* Bold Modern Executive Headline with Kinetic Typography */}
               <RevealOnScroll direction="up" delay={100} blur={true}>
-                <div className="space-y-1">
-                  <p className="gsap-parallax-badge text-xs font-code tracking-[0.25em] text-white/40 uppercase">
-                    SYSTEMS & ARCHITECTURE // 2026
-                  </p>
-                  <h1 className="gsap-parallax-title text-5xl sm:text-6xl lg:text-7xl font-extrabold leading-[1.0] text-white tracking-tight uppercase">
-                    <span>{currentTheme.leftTitleMain}</span><br />
-                    <span className="text-white/50">{currentTheme.leftTitleSub}</span>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-ping" />
+                    <p className="gsap-parallax-badge text-xs font-code tracking-[0.25em] text-white/50 uppercase">
+                      <ScrambleHeading text="SYSTEMS & ARCHITECTURE // 2026" speed={22} />
+                    </p>
+                  </div>
+                  <h1 className="gsap-parallax-title text-5xl sm:text-6xl lg:text-7xl font-extrabold leading-[1.05] text-white tracking-tight uppercase select-none">
+                    <div className="text-white drop-shadow-[0_0_25px_rgba(59,130,246,0.35)]">
+                      <KineticText key={`main-${currentTheme.id}`} variant="split-chars" stagger={0.02}>
+                        {currentTheme.leftTitleMain}
+                      </KineticText>
+                    </div>
+                    <div className="text-blue-400/80 drop-shadow-[0_0_20px_rgba(96,165,250,0.25)]">
+                      <KineticText key={`sub-${currentTheme.id}`} variant="split-chars" delay={0.12} stagger={0.02}>
+                        {currentTheme.leftTitleSub}
+                      </KineticText>
+                    </div>
                   </h1>
                 </div>
               </RevealOnScroll>
 
-              {/* Role Title & Domain Code */}
+              {/* Role Title & Domain Code with Scramble FX */}
               <RevealOnScroll direction="up" delay={200} blur={true}>
-                <div className="space-y-2">
-                  <div className="gsap-parallax-badge text-sm font-code font-semibold tracking-wider uppercase text-white/90 flex items-center gap-2">
-                    <span style={{ color: currentTheme.accent }}>{currentTheme.role}</span>
+                <div className="space-y-2.5">
+                  <div className="gsap-parallax-badge text-sm font-code font-semibold tracking-wider uppercase text-white/90 flex flex-wrap items-center gap-2">
+                    <span 
+                      className="px-2.5 py-0.5 rounded-md bg-white/[0.04] border border-white/10 shadow-sm"
+                      style={{ color: currentTheme.accent }}
+                    >
+                      <ScrambleHeading key={currentTheme.role} text={currentTheme.role} speed={25} />
+                    </span>
                     <span className="text-white/30">•</span>
-                    <span className="text-white/50 text-xs">{currentTheme.code}</span>
+                    <span className="text-white/60 text-xs tracking-widest">{currentTheme.code}</span>
                   </div>
-                  <p className="gsap-parallax-desc text-white/70 text-sm sm:text-base leading-relaxed max-w-xl font-light">
-                    {PORTFOLIO_PROFILE.tagline}
+                  <p className="gsap-parallax-desc text-white/75 text-sm sm:text-base leading-relaxed max-w-xl font-light">
+                    <KineticText key={`desc-${currentTheme.id}`} variant="word-reveal" delay={0.2} stagger={0.015}>
+                      {PORTFOLIO_PROFILE.tagline}
+                    </KineticText>
                   </p>
                 </div>
               </RevealOnScroll>
@@ -938,14 +957,79 @@ export const CyberSodaLayout: React.FC = () => {
         </section>
 
         {/* =======================================================================
+            KINETIC TYPOGRAPHY INFINITE MARQUEE STRIP
+            ======================================================================= */}
+        <div className="w-full overflow-hidden border-y border-white/[0.08] py-3 bg-white/[0.01] backdrop-blur-sm -my-6 select-none">
+          <div className="animate-marquee-left flex items-center gap-8 text-xs font-code tracking-[0.25em] text-white/50 uppercase">
+            <span className="flex items-center gap-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+              CYBER SECURITY DEFENSE
+            </span>
+            <span className="text-white/20">///</span>
+            <span className="flex items-center gap-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+              FULL STACK WEB & MOBILE APPS
+            </span>
+            <span className="text-white/20">///</span>
+            <span className="flex items-center gap-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
+              POWER BI & DATA INTELLIGENCE
+            </span>
+            <span className="text-white/20">///</span>
+            <span className="flex items-center gap-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              ZERO TRUST ARCHITECTURE
+            </span>
+            <span className="text-white/20">///</span>
+            <span className="flex items-center gap-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-sky-400" />
+              BRAIIL ACADEMY & BSROCKS
+            </span>
+            <span className="text-white/20">///</span>
+            {/* Duplicated for smooth loop */}
+            <span className="flex items-center gap-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+              CYBER SECURITY DEFENSE
+            </span>
+            <span className="text-white/20">///</span>
+            <span className="flex items-center gap-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+              FULL STACK WEB & MOBILE APPS
+            </span>
+            <span className="text-white/20">///</span>
+            <span className="flex items-center gap-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
+              POWER BI & DATA INTELLIGENCE
+            </span>
+            <span className="text-white/20">///</span>
+            <span className="flex items-center gap-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              ZERO TRUST ARCHITECTURE
+            </span>
+            <span className="text-white/20">///</span>
+            <span className="flex items-center gap-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-sky-400" />
+              BRAIIL ACADEMY & BSROCKS
+            </span>
+            <span className="text-white/20">///</span>
+          </div>
+        </div>
+
+        {/* =======================================================================
             SECTION 02: ABOUT & IDENTITY
             ======================================================================= */}
         <section id="about" className="space-y-8 scroll-mt-28">
           <RevealOnScroll direction="up" blur={true}>
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/[0.08] pb-4">
               <div>
-                <span className="gsap-parallax-badge inline-block text-xs font-code text-blue-400 tracking-widest uppercase">02 // PROFILE & DOSSIER</span>
-                <h2 className="gsap-parallax-title text-3xl sm:text-4xl font-bold text-white tracking-tight">Professional Background</h2>
+                <span className="gsap-parallax-badge inline-block text-xs font-code text-blue-400 tracking-widest uppercase">
+                  <ScrambleHeading text="02 // PROFILE & DOSSIER" speed={24} />
+                </span>
+                <h2 className="gsap-parallax-title text-3xl sm:text-4xl font-bold text-white tracking-tight">
+                  <KineticText variant="split-chars" stagger={0.02}>
+                    Professional Background
+                  </KineticText>
+                </h2>
               </div>
 
               {/* Dossier Stream Controls */}
@@ -1102,8 +1186,14 @@ export const CyberSodaLayout: React.FC = () => {
           <RevealOnScroll direction="up" blur={true}>
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/[0.08] pb-4">
               <div>
-                <span className="gsap-parallax-badge inline-block text-xs font-code text-blue-400 tracking-widest uppercase">03 // SKILLS & STACK</span>
-                <h2 className="gsap-parallax-title text-3xl sm:text-4xl font-bold text-white tracking-tight">Technical Arsenal</h2>
+                <span className="gsap-parallax-badge inline-block text-xs font-code text-blue-400 tracking-widest uppercase">
+                  <ScrambleHeading text="03 // SKILLS & STACK" speed={24} />
+                </span>
+                <h2 className="gsap-parallax-title text-3xl sm:text-4xl font-bold text-white tracking-tight">
+                  <KineticText variant="split-chars" stagger={0.02}>
+                    Technical Arsenal
+                  </KineticText>
+                </h2>
               </div>
 
               {/* Category Tabs */}
@@ -1178,8 +1268,14 @@ export const CyberSodaLayout: React.FC = () => {
           <RevealOnScroll direction="up" blur={true}>
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/[0.08] pb-4">
               <div>
-                <span className="gsap-parallax-badge inline-block text-xs font-code text-blue-400 tracking-widest uppercase">04 // SELECTED WORK</span>
-                <h2 className="gsap-parallax-title text-3xl sm:text-4xl font-bold text-white tracking-tight">Featured Projects</h2>
+                <span className="gsap-parallax-badge inline-block text-xs font-code text-blue-400 tracking-widest uppercase">
+                  <ScrambleHeading text="04 // SELECTED WORK" speed={24} />
+                </span>
+                <h2 className="gsap-parallax-title text-3xl sm:text-4xl font-bold text-white tracking-tight">
+                  <KineticText variant="split-chars" stagger={0.02}>
+                    Featured Projects
+                  </KineticText>
+                </h2>
               </div>
 
               {/* Filter Tabs */}
@@ -1283,8 +1379,14 @@ export const CyberSodaLayout: React.FC = () => {
           <RevealOnScroll direction="up" blur={true}>
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/[0.08] pb-4">
               <div>
-                <span className="gsap-parallax-badge inline-block text-xs font-code text-blue-400 tracking-widest uppercase">05 // CREDENTIALS & EXPERIENCE</span>
-                <h2 className="gsap-parallax-title text-3xl sm:text-4xl font-bold text-white tracking-tight">Timeline & Certifications</h2>
+                <span className="gsap-parallax-badge inline-block text-xs font-code text-blue-400 tracking-widest uppercase">
+                  <ScrambleHeading text="05 // CREDENTIALS & EXPERIENCE" speed={24} />
+                </span>
+                <h2 className="gsap-parallax-title text-3xl sm:text-4xl font-bold text-white tracking-tight">
+                  <KineticText variant="split-chars" stagger={0.02}>
+                    Timeline & Certifications
+                  </KineticText>
+                </h2>
               </div>
             </div>
           </RevealOnScroll>
@@ -1351,8 +1453,14 @@ export const CyberSodaLayout: React.FC = () => {
           <RevealOnScroll direction="up" blur={true}>
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/[0.08] pb-4">
               <div>
-                <span className="gsap-parallax-badge inline-block text-xs font-code text-blue-400 tracking-widest uppercase">06 // DIRECT CONTACT & TRANSMISSION</span>
-                <h2 className="gsap-parallax-title text-3xl sm:text-4xl font-bold text-white tracking-tight">Get In Touch</h2>
+                <span className="gsap-parallax-badge inline-block text-xs font-code text-blue-400 tracking-widest uppercase">
+                  <ScrambleHeading text="06 // DIRECT CONTACT & TRANSMISSION" speed={24} />
+                </span>
+                <h2 className="gsap-parallax-title text-3xl sm:text-4xl font-bold text-white tracking-tight">
+                  <KineticText variant="split-chars" stagger={0.02}>
+                    Get In Touch
+                  </KineticText>
+                </h2>
               </div>
               <div className="flex items-center gap-2">
                 <span className="gsap-parallax-badge inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-code">

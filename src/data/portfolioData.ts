@@ -72,15 +72,15 @@ export const PORTFOLIO_PROFILE = {
   whatsappRaw: "917305662449",
   whatsapp: "https://wa.me/917305662449",
   location: "Chennai, Tamil Nadu, India",
-  linkedin: "https://www.linkedin.com/in/sathya-sai-js",
-  instagram: "https://instagram.com/sathya_sai_js",
+  linkedin: "https://www.linkedin.com/in/sathya-sai-j-s-1187b5399?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+  instagram: "https://www.instagram.com/sat_boy_21?igsi=eWJhNnZreXI5Njhx",
   github: "https://github.com/satboy-12",
   resumeUrl: "#download-cv",
 
   socials: {
-    linkedin: "https://www.linkedin.com/in/sathya-sai-js",
+    linkedin: "https://www.linkedin.com/in/sathya-sai-j-s-1187b5399?utm_source=share_via&utm_content=profile&utm_medium=member_android",
     github: "https://github.com/satboy-12",
-    instagram: "https://instagram.com/sathya_sai_js",
+    instagram: "https://www.instagram.com/sat_boy_21?igsi=eWJhNnZreXI5Njhx",
     whatsapp: "https://wa.me/917305662449",
     email: "mailto:sathyasaijs12@gmail.com",
     gmail: "https://mail.google.com/mail/?view=cm&fs=1&to=sathyasaijs12@gmail.com"

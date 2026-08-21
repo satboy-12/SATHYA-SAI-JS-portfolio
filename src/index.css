@@ -448,3 +448,106 @@ body {
 .stagger-3 { animation-delay: 300ms; }
 .stagger-4 { animation-delay: 400ms; }
 
+/* Kinetic Typography Marquee & Fluid Flows */
+@keyframes marqueeLeft {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+
+@keyframes marqueeRight {
+  0% { transform: translate3d(-50%, 0, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+
+.animate-marquee-left {
+  display: flex;
+  width: max-content;
+  animation: marqueeLeft 30s linear infinite;
+}
+
+.animate-marquee-right {
+  display: flex;
+  width: max-content;
+  animation: marqueeRight 30s linear infinite;
+}
+
+.animate-marquee-left:hover,
+.animate-marquee-right:hover {
+  animation-play-state: paused;
+}
+
+/* Glowing text shine effect */
+@keyframes textShine {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.shimmer-text {
+  background: linear-gradient(90deg, #ffffff 0%, #60a5fa 25%, #38bdf8 50%, #818cf8 75%, #ffffff 100%);
+  background-size: 200% auto;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: textShine 6s ease infinite;
+}
+
+.stroke-text {
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.25);
+  color: transparent;
+  transition: all 0.3s ease;
+}
+
+.stroke-text:hover {
+  -webkit-text-stroke: 1px rgba(96, 165, 250, 0.8);
+  color: rgba(96, 165, 250, 0.15);
+  text-shadow: 0 0 20px rgba(96, 165, 250, 0.5);
+}
+
+/* Cyber Text Glitch */
+.cyber-glitch-hover {
+  position: relative;
+  display: inline-block;
+}
+
+.cyber-glitch-hover:hover::before,
+.cyber-glitch-hover:hover::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  clip: rect(0, 0, 0, 0);
+}
+
+.cyber-glitch-hover:hover::before {
+  left: -2px;
+  text-shadow: 2px 0 #38bdf8;
+  animation: glitch-anim-1 0.4s infinite linear alternate-reverse;
+}
+
+.cyber-glitch-hover:hover::after {
+  left: 2px;
+  text-shadow: -2px 0 #ec4899;
+  animation: glitch-anim-2 0.3s infinite linear alternate-reverse;
+}
+
+@keyframes glitch-anim-1 {
+  0% { clip: rect(10px, 9999px, 44px, 0); }
+  50% { clip: rect(32px, 9999px, 12px, 0); }
+  100% { clip: rect(80px, 9999px, 95px, 0); }
+}
+
+@keyframes glitch-anim-2 {
+  0% { clip: rect(65px, 9999px, 80px, 0); }
+  50% { clip: rect(15px, 9999px, 60px, 0); }
+  100% { clip: rect(40px, 9999px, 20px, 0); }
+}
+
