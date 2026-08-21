@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import gsap from 'gsap';
 import { PORTFOLIO_PROFILE, ProjectCaseStudy, CertificationItem } from '../data/portfolioData';
 import { heroImage, ABOUT_IMAGE_URL } from '../assets/profileImage';
 import { Cyber3DScrollCanvas } from './Cyber3DScrollCanvas';
@@ -38,7 +39,12 @@ import {
   Radio,
   Zap,
   Layers,
-  ChevronDown
+  ChevronDown,
+  MessageCircle,
+  MessageSquare,
+  Maximize2,
+  Minimize2,
+  Menu
 } from 'lucide-react';
 import { cyberAudio } from '../utils/soundEngine';
 import confetti from 'canvas-confetti';
@@ -127,12 +133,15 @@ const SECTIONS = [
 export const CyberSodaLayout: React.FC = () => {
   const [activeThemeIdx, setActiveThemeIdx] = useState<number>(0);
   const [isMuted, setIsMuted] = useState<boolean>(false);
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const [activeToolkitTab, setActiveToolkitTab] = useState<string>('cyber_security');
-  const [aboutViewTab, setAboutViewTab] = useState<'bio' | 'cli'>('bio');
   const [projectFilter, setProjectFilter] = useState<string>('all');
   const [contactSubmitted, setContactSubmitted] = useState<boolean>(false);
+  const [contactDispatchMode, setContactDispatchMode] = useState<'gmail' | 'whatsapp' | null>(null);
   const [copiedEmail, setCopiedEmail] = useState<boolean>(false);
-  const [contactForm, setContactForm] = useState({ name: '', email: '', message: '' });
+  const [copiedWhatsApp, setCopiedWhatsApp] = useState<boolean>(false);
+  const [contactForm, setContactForm] = useState({ name: '', email: '', subject: '', message: '' });
 
   // Scroll Progress State
   const [scrollProgress, setScrollProgress] = useState<number>(0);
@@ -147,6 +156,48 @@ export const CyberSodaLayout: React.FC = () => {
   const currentTheme = THEMES[activeThemeIdx];
   const containerRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+
+  // Fullscreen change listener
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+    };
+  }, []);
+
+  // Toggle Full Screen Function
+  const toggleFullscreen = () => {
+    cyberAudio.playKeyClick();
+    if (!document.fullscreenElement) {
+      const docEl = document.documentElement as any;
+      if (docEl.requestFullscreen) {
+        docEl.requestFullscreen().catch(() => {});
+      } else if (docEl.webkitRequestFullscreen) {
+        docEl.webkitRequestFullscreen();
+      } else if (docEl.msRequestFullscreen) {
+        docEl.msRequestFullscreen();
+      }
+    } else {
+      const doc = document as any;
+      if (doc.exitFullscreen) {
+        doc.exitFullscreen().catch(() => {});
+      } else if (doc.webkitExitFullscreen) {
+        doc.webkitExitFullscreen();
+      } else if (doc.msExitFullscreen) {
+        doc.msExitFullscreen();
+      }
+    }
+  };
 
   // Sound toggle
   const toggleMute = () => {
@@ -189,6 +240,85 @@ export const CyberSodaLayout: React.FC = () => {
     window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // GSAP-driven subtle parallax effect on slide titles, subtitles, and description text
+  useEffect(() => {
+    let animFrameId: number;
+
+    const updateParallax = () => {
+      if (window.innerWidth < 640) return;
+
+      const windowHeight = window.innerHeight;
+      const centerY = windowHeight / 2;
+
+      // 1. Parallax for Section & Slide Titles
+      const titles = document.querySelectorAll<HTMLElement>('.gsap-parallax-title');
+      titles.forEach((el) => {
+        const rect = el.getBoundingClientRect();
+        if (rect.top < windowHeight + 100 && rect.bottom > -100) {
+          const progress = (rect.top - centerY) / centerY;
+          const targetY = progress * -20;
+          gsap.to(el, {
+            y: targetY,
+            duration: 0.35,
+            ease: 'power2.out',
+            overwrite: 'auto',
+          });
+        }
+      });
+
+      // 2. Parallax for Descriptions & Body Text
+      const descs = document.querySelectorAll<HTMLElement>('.gsap-parallax-desc');
+      descs.forEach((el) => {
+        const rect = el.getBoundingClientRect();
+        if (rect.top < windowHeight + 100 && rect.bottom > -100) {
+          const progress = (rect.top - centerY) / centerY;
+          const targetY = progress * -12;
+          gsap.to(el, {
+            y: targetY,
+            duration: 0.4,
+            ease: 'power2.out',
+            overwrite: 'auto',
+          });
+        }
+      });
+
+      // 3. Parallax for Badges & Tag Headers
+      const badges = document.querySelectorAll<HTMLElement>('.gsap-parallax-badge');
+      badges.forEach((el) => {
+        const rect = el.getBoundingClientRect();
+        if (rect.top < windowHeight + 100 && rect.bottom > -100) {
+          const progress = (rect.top - centerY) / centerY;
+          const targetY = progress * -28;
+          gsap.to(el, {
+            y: targetY,
+            duration: 0.3,
+            ease: 'power2.out',
+            overwrite: 'auto',
+          });
+        }
+      });
+    };
+
+    const handleScrollParallax = () => {
+      cancelAnimationFrame(animFrameId);
+      animFrameId = requestAnimationFrame(updateParallax);
+    };
+
+    window.addEventListener('scroll', handleScrollParallax, { passive: true });
+    window.addEventListener('resize', handleScrollParallax, { passive: true });
+    updateParallax();
+
+    return () => {
+      cancelAnimationFrame(animFrameId);
+      window.removeEventListener('scroll', handleScrollParallax);
+      window.removeEventListener('resize', handleScrollParallax);
+      const allElements = document.querySelectorAll<HTMLElement>(
+        '.gsap-parallax-title, .gsap-parallax-desc, .gsap-parallax-badge'
+      );
+      allElements.forEach((el) => gsap.killTweensOf(el));
+    };
   }, []);
 
   // Smooth scroll to section
@@ -257,16 +387,72 @@ export const CyberSodaLayout: React.FC = () => {
     setTimeout(() => setCopiedEmail(false), 2000);
   };
 
-  // Form Submit Handler
-  const handleContactSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  // Copy WhatsApp Function
+  const handleCopyWhatsApp = () => {
+    cyberAudio.playKeyClick();
+    navigator.clipboard.writeText(PORTFOLIO_PROFILE.whatsappNumber || PORTFOLIO_PROFILE.phone);
+    setCopiedWhatsApp(true);
+    setTimeout(() => setCopiedWhatsApp(false), 2000);
+  };
+
+  // Dispatch via Gmail
+  const handleSendViaGmail = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!contactForm.name && !contactForm.message) {
+      // Just open Gmail compose to Sathya Sai
+      window.open(PORTFOLIO_PROFILE.getGmailUrl("Project Collaboration Inquiry", "Hi Sathya Sai JS,\n\nI would like to discuss a project with you."), '_blank');
+      return;
+    }
+
     cyberAudio.playSuccess();
-    confetti({ particleCount: 75, spread: 80, origin: { y: 0.7 } });
+    confetti({ particleCount: 80, spread: 85, origin: { y: 0.65 } });
     setContactSubmitted(true);
+    setContactDispatchMode('gmail');
+
+    const subject = contactForm.subject.trim() || `Portfolio Inquiry from ${contactForm.name}`;
+    const body = `Hello Sathya Sai JS,\n\nName: ${contactForm.name}\nEmail: ${contactForm.email}\nSubject: ${subject}\n\nMessage:\n${contactForm.message}\n\n---\nSent via Portfolio Contact Gateway`;
+    
+    // Copy payload to clipboard as backup
+    navigator.clipboard.writeText(`From: ${contactForm.name} (${contactForm.email})\n\n${contactForm.message}`).catch(() => {});
+    
+    // Open Gmail web compose in a new tab
+    const gmailUrl = PORTFOLIO_PROFILE.getGmailUrl(subject, body);
+    window.open(gmailUrl, '_blank');
+
     setTimeout(() => {
       setContactSubmitted(false);
-      setContactForm({ name: '', email: '', message: '' });
-    }, 3000);
+      setContactDispatchMode(null);
+      setContactForm({ name: '', email: '', subject: '', message: '' });
+    }, 4000);
+  };
+
+  // Dispatch via WhatsApp
+  const handleSendViaWhatsApp = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    cyberAudio.playSuccess();
+    confetti({ particleCount: 80, spread: 85, origin: { y: 0.65 } });
+    setContactSubmitted(true);
+    setContactDispatchMode('whatsapp');
+
+    const nameStr = contactForm.name ? `*From:* ${contactForm.name}\n` : '';
+    const emailStr = contactForm.email ? `*Email:* ${contactForm.email}\n` : '';
+    const msgStr = contactForm.message ? `*Message:*\n${contactForm.message}` : `Hi Sathya Sai JS, I would like to connect regarding your portfolio!`;
+    const fullText = `👋 Hello Sathya Sai JS!\n\n${nameStr}${emailStr}${msgStr}`;
+
+    const waUrl = PORTFOLIO_PROFILE.getWhatsAppUrl(fullText);
+    window.open(waUrl, '_blank');
+
+    setTimeout(() => {
+      setContactSubmitted(false);
+      setContactDispatchMode(null);
+      setContactForm({ name: '', email: '', subject: '', message: '' });
+    }, 4000);
+  };
+
+  // Form Submit Handler (defaults to Gmail)
+  const handleContactSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleSendViaGmail(e);
   };
 
   // Download CV
@@ -457,10 +643,25 @@ export const CyberSodaLayout: React.FC = () => {
         </nav>
 
         {/* Header Actions */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2 sm:gap-2.5">
+          {/* Full Screen Mode Toggle Button */}
+          <button
+            onClick={toggleFullscreen}
+            aria-label={isFullscreen ? "Exit Full Screen" : "Fit Full Screen"}
+            title={isFullscreen ? "Exit Full Screen (Esc)" : "Fit in Full Screen"}
+            className="w-8 h-8 rounded-full border border-white/10 bg-white/[0.03] flex items-center justify-center text-white/60 hover:text-white hover:border-white/20 transition-all backdrop-blur-md cursor-pointer"
+          >
+            {isFullscreen ? (
+              <Minimize2 className="w-3.5 h-3.5 text-blue-400" />
+            ) : (
+              <Maximize2 className="w-3.5 h-3.5 text-white/80" />
+            )}
+          </button>
+
           <button
             onClick={toggleMute}
             aria-label="Toggle Sound"
+            title={isMuted ? "Unmute Audio" : "Mute Audio"}
             className="w-8 h-8 rounded-full border border-white/10 bg-white/[0.03] flex items-center justify-center text-white/60 hover:text-white hover:border-white/20 transition-all backdrop-blur-md cursor-pointer"
           >
             {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5 text-white/80" />}
@@ -475,29 +676,133 @@ export const CyberSodaLayout: React.FC = () => {
 
           <button
             onClick={() => scrollToSection('contact')}
-            className="px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-semibold tracking-wide transition-all shadow-lg shadow-blue-500/20 cursor-pointer"
+            className="hidden sm:inline-flex px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-semibold tracking-wide transition-all shadow-lg shadow-blue-500/20 cursor-pointer"
           >
             Transmit
+          </button>
+
+          {/* Mobile Drawer Hamburger Button */}
+          <button
+            onClick={() => {
+              cyberAudio.playKeyClick();
+              setIsMobileMenuOpen(!isMobileMenuOpen);
+            }}
+            aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+            className="md:hidden w-8 h-8 rounded-full border border-white/15 bg-white/[0.06] flex items-center justify-center text-white hover:bg-white/10 transition-all cursor-pointer"
+          >
+            {isMobileMenuOpen ? <X className="w-4 h-4 text-blue-400" /> : <Menu className="w-4 h-4 text-white" />}
           </button>
         </div>
       </header>
 
       {/* =========================================================================
-          MAIN SECTIONS CONTAINER
+          MOBILE DRAWER NAVIGATION (PHONES & TABLETS < 768px)
           ========================================================================= */}
-      <div className="relative z-10 max-w-6xl mx-auto px-6 sm:px-12 pt-28 pb-24 space-y-32">
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-40 md:hidden animate-fade-in">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/80 backdrop-blur-xl"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+
+          {/* Drawer Content */}
+          <div className="absolute top-20 left-0 right-0 max-h-[calc(100vh-5rem)] overflow-y-auto bg-[#07090f]/95 border-b border-white/10 p-6 space-y-6 shadow-2xl">
+            {/* Navigation Links */}
+            <div className="space-y-1">
+              <div className="text-[10px] font-code text-white/40 tracking-widest uppercase mb-2">
+                NAVIGATION
+              </div>
+              {SECTIONS.map((sec) => (
+                <button
+                  key={sec.id}
+                  onClick={() => {
+                    scrollToSection(sec.id);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-between p-3 rounded-2xl text-left text-sm font-medium transition-all ${
+                    activeSectionId === sec.id
+                      ? 'bg-blue-600/20 border border-blue-500/30 text-white font-bold'
+                      : 'text-white/70 hover:text-white hover:bg-white/[0.04]'
+                  }`}
+                >
+                  <span>{sec.title}</span>
+                  <ChevronRight className="w-4 h-4 text-white/40" />
+                </button>
+              ))}
+            </div>
+
+            {/* Quick Actions in Mobile Drawer */}
+            <div className="space-y-3 pt-4 border-t border-white/[0.08]">
+              <div className="text-[10px] font-code text-white/40 tracking-widest uppercase">
+                DIRECT TRANSMISSIONS
+              </div>
+              <div className="grid grid-cols-2 gap-2.5">
+                <a
+                  href={PORTFOLIO_PROFILE.getWhatsAppUrl()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center justify-center gap-2 p-3 rounded-2xl bg-[#25D366]/20 border border-[#25D366]/40 text-[#25D366] font-bold text-xs"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  <span>WhatsApp</span>
+                </a>
+
+                <a
+                  href={PORTFOLIO_PROFILE.getGmailUrl()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center justify-center gap-2 p-3 rounded-2xl bg-red-500/20 border border-red-500/40 text-red-400 font-bold text-xs"
+                >
+                  <Mail className="w-4 h-4" />
+                  <span>Gmail</span>
+                </a>
+              </div>
+
+              <div className="flex gap-2 pt-1">
+                <button
+                  onClick={() => {
+                    handleDownloadCV();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-white/[0.05] border border-white/15 text-white text-xs font-medium"
+                >
+                  <FileDown className="w-3.5 h-3.5" /> Download CV
+                </button>
+                <button
+                  onClick={() => {
+                    toggleFullscreen();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-white/[0.05] border border-white/15 text-white text-xs font-medium"
+                >
+                  {isFullscreen ? <Minimize2 className="w-3.5 h-3.5 text-blue-400" /> : <Maximize2 className="w-3.5 h-3.5" />}
+                  <span>{isFullscreen ? 'Exit Full' : 'Fullscreen'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          MAIN SECTIONS CONTAINER (WIDE SCREEN & FULL VIEWPORT FIT)
+          ========================================================================= */}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 pt-24 sm:pt-28 pb-24 space-y-28 lg:space-y-36">
 
         {/* =======================================================================
-            SECTION 01: HERO / EXECUTIVE STAGE
+            SECTION 01: HERO / EXECUTIVE STAGE (FULL SCREEN FIT)
             ======================================================================= */}
-        <section id="hero" className="min-h-[85vh] flex flex-col justify-center">
+        <section id="hero" className="min-h-[calc(100vh-6rem)] flex flex-col justify-center py-6 sm:py-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
             
             {/* Left Column: Clean Executive Headline & Brief */}
             <div className="lg:col-span-7 space-y-6">
               {/* Status Badge */}
               <RevealOnScroll direction="up" delay={0} blur={true}>
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] backdrop-blur-md">
+                <div className="gsap-parallax-badge inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] backdrop-blur-md">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                   <span className="text-[11px] font-code font-medium tracking-wider text-white/80">
                     {PORTFOLIO_PROFILE.availability}
@@ -508,10 +813,10 @@ export const CyberSodaLayout: React.FC = () => {
               {/* Bold Modern Executive Headline */}
               <RevealOnScroll direction="up" delay={100} blur={true}>
                 <div className="space-y-1">
-                  <p className="text-xs font-code tracking-[0.25em] text-white/40 uppercase">
+                  <p className="gsap-parallax-badge text-xs font-code tracking-[0.25em] text-white/40 uppercase">
                     SYSTEMS & ARCHITECTURE // 2026
                   </p>
-                  <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold leading-[1.0] text-white tracking-tight uppercase">
+                  <h1 className="gsap-parallax-title text-5xl sm:text-6xl lg:text-7xl font-extrabold leading-[1.0] text-white tracking-tight uppercase">
                     <span>{currentTheme.leftTitleMain}</span><br />
                     <span className="text-white/50">{currentTheme.leftTitleSub}</span>
                   </h1>
@@ -521,12 +826,12 @@ export const CyberSodaLayout: React.FC = () => {
               {/* Role Title & Domain Code */}
               <RevealOnScroll direction="up" delay={200} blur={true}>
                 <div className="space-y-2">
-                  <div className="text-sm font-code font-semibold tracking-wider uppercase text-white/90 flex items-center gap-2">
+                  <div className="gsap-parallax-badge text-sm font-code font-semibold tracking-wider uppercase text-white/90 flex items-center gap-2">
                     <span style={{ color: currentTheme.accent }}>{currentTheme.role}</span>
                     <span className="text-white/30">•</span>
                     <span className="text-white/50 text-xs">{currentTheme.code}</span>
                   </div>
-                  <p className="text-white/70 text-sm sm:text-base leading-relaxed max-w-xl font-light">
+                  <p className="gsap-parallax-desc text-white/70 text-sm sm:text-base leading-relaxed max-w-xl font-light">
                     {PORTFOLIO_PROFILE.tagline}
                   </p>
                 </div>
@@ -639,73 +944,31 @@ export const CyberSodaLayout: React.FC = () => {
           <RevealOnScroll direction="up" blur={true}>
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/[0.08] pb-4">
               <div>
-                <span className="text-xs font-code text-blue-400 tracking-widest uppercase">02 // PROFILE & DOSSIER</span>
-                <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">Professional Background</h2>
+                <span className="gsap-parallax-badge inline-block text-xs font-code text-blue-400 tracking-widest uppercase">02 // PROFILE & DOSSIER</span>
+                <h2 className="gsap-parallax-title text-3xl sm:text-4xl font-bold text-white tracking-tight">Professional Background</h2>
               </div>
 
-              {/* View Switcher Tabs & Actions */}
-              <div className="flex items-center gap-2">
-                <div className="flex items-center p-1 rounded-2xl bg-white/[0.04] border border-white/[0.1]">
-                  <button
-                    onClick={() => {
-                      cyberAudio.playKeyClick();
-                      setAboutViewTab('bio');
-                    }}
-                    className={`px-3 py-1 rounded-xl text-xs font-code transition-all cursor-pointer ${
-                      aboutViewTab === 'bio'
-                        ? 'bg-white text-black font-bold shadow-md'
-                        : 'text-white/60 hover:text-white'
-                    }`}
-                  >
-                    Dossier & Bio
-                  </button>
-                  <button
-                    onClick={() => {
-                      cyberAudio.playKeyClick();
-                      setAboutViewTab('cli');
-                    }}
-                    className={`px-3 py-1 rounded-xl text-xs font-code transition-all cursor-pointer flex items-center gap-1.5 ${
-                      aboutViewTab === 'cli'
-                        ? 'bg-white text-black font-bold shadow-md'
-                        : 'text-white/60 hover:text-white'
-                    }`}
-                  >
-                    <Terminal className="w-3 h-3 text-blue-400" />
-                    Interactive CLI
-                  </button>
-                </div>
+              {/* Dossier Stream Controls */}
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => startTypingEffect(false)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white/80 font-code text-xs transition-all cursor-pointer"
+                  title="Replay biometric bio stream"
+                >
+                  <RotateCcw className="w-3 h-3" /> Replay Bio
+                </button>
 
-                {aboutViewTab === 'bio' && (
-                  <div className="hidden sm:flex items-center gap-1.5">
-                    <button
-                      onClick={() => startTypingEffect(false)}
-                      className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white/80 font-code text-xs transition-all cursor-pointer"
-                      title="Re-run terminal stream"
-                    >
-                      <RotateCcw className="w-3 h-3" /> Replay
-                    </button>
-
-                    <button
-                      onClick={() => startTypingEffect(true)}
-                      className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/[0.08] hover:bg-white/[0.15] border border-white/15 text-white font-code text-xs transition-all cursor-pointer"
-                    >
-                      <Zap className="w-3 h-3 text-blue-400" /> Instant
-                    </button>
-                  </div>
-                )}
+                <button
+                  onClick={() => startTypingEffect(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.08] hover:bg-white/[0.15] border border-white/15 text-white font-code text-xs transition-all cursor-pointer"
+                >
+                  <Zap className="w-3 h-3 text-blue-400" /> Instant
+                </button>
               </div>
             </div>
           </RevealOnScroll>
 
-          {aboutViewTab === 'cli' ? (
-            <RevealOnScroll direction="up" blur={true}>
-              <InteractiveTerminal 
-                accentColor={currentTheme.accent} 
-                onThemeSwitch={(idx) => handleSwitchTheme(idx)}
-              />
-            </RevealOnScroll>
-          ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
               {/* Left Photo & Ident Badge */}
               <div className="lg:col-span-4 space-y-4">
                 <RevealOnScroll direction="up" delay={50} scale={true} blur={false}>
@@ -830,7 +1093,6 @@ export const CyberSodaLayout: React.FC = () => {
                 </div>
               </div>
             </div>
-          )}
         </section>
 
         {/* =======================================================================
@@ -840,8 +1102,8 @@ export const CyberSodaLayout: React.FC = () => {
           <RevealOnScroll direction="up" blur={true}>
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/[0.08] pb-4">
               <div>
-                <span className="text-xs font-code text-blue-400 tracking-widest uppercase">03 // SKILLS & STACK</span>
-                <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">Technical Arsenal</h2>
+                <span className="gsap-parallax-badge inline-block text-xs font-code text-blue-400 tracking-widest uppercase">03 // SKILLS & STACK</span>
+                <h2 className="gsap-parallax-title text-3xl sm:text-4xl font-bold text-white tracking-tight">Technical Arsenal</h2>
               </div>
 
               {/* Category Tabs */}
@@ -916,8 +1178,8 @@ export const CyberSodaLayout: React.FC = () => {
           <RevealOnScroll direction="up" blur={true}>
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/[0.08] pb-4">
               <div>
-                <span className="text-xs font-code text-blue-400 tracking-widest uppercase">04 // SELECTED WORK</span>
-                <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">Featured Projects</h2>
+                <span className="gsap-parallax-badge inline-block text-xs font-code text-blue-400 tracking-widest uppercase">04 // SELECTED WORK</span>
+                <h2 className="gsap-parallax-title text-3xl sm:text-4xl font-bold text-white tracking-tight">Featured Projects</h2>
               </div>
 
               {/* Filter Tabs */}
@@ -948,7 +1210,7 @@ export const CyberSodaLayout: React.FC = () => {
           </RevealOnScroll>
 
           {/* Projects Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProjects.map((proj, pIdx) => (
               <RevealOnScroll key={proj.id} direction="up" delay={pIdx * 100} blur={true}>
                 <div className="group rounded-3xl bg-[#090c12] border border-white/10 hover:border-white/25 overflow-hidden transition-all duration-300 flex flex-col h-full shadow-2xl">
@@ -967,10 +1229,10 @@ export const CyberSodaLayout: React.FC = () => {
                   {/* Body Content */}
                   <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
                     <div className="space-y-2">
-                      <h3 className="text-lg font-bold text-white group-hover:text-blue-300 transition-colors">
+                      <h3 className="gsap-parallax-title text-lg font-bold text-white group-hover:text-blue-300 transition-colors">
                         {proj.title}
                       </h3>
-                      <p className="text-xs text-white/70 leading-relaxed font-light">
+                      <p className="gsap-parallax-desc text-xs text-white/70 leading-relaxed font-light">
                         {proj.description}
                       </p>
                     </div>
@@ -1021,8 +1283,8 @@ export const CyberSodaLayout: React.FC = () => {
           <RevealOnScroll direction="up" blur={true}>
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/[0.08] pb-4">
               <div>
-                <span className="text-xs font-code text-blue-400 tracking-widest uppercase">05 // CREDENTIALS & EXPERIENCE</span>
-                <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">Timeline & Certifications</h2>
+                <span className="gsap-parallax-badge inline-block text-xs font-code text-blue-400 tracking-widest uppercase">05 // CREDENTIALS & EXPERIENCE</span>
+                <h2 className="gsap-parallax-title text-3xl sm:text-4xl font-bold text-white tracking-tight">Timeline & Certifications</h2>
               </div>
             </div>
           </RevealOnScroll>
@@ -1089,44 +1351,117 @@ export const CyberSodaLayout: React.FC = () => {
           <RevealOnScroll direction="up" blur={true}>
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/[0.08] pb-4">
               <div>
-                <span className="text-xs font-code text-blue-400 tracking-widest uppercase">06 // DIRECT CONTACT</span>
-                <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">Get In Touch</h2>
+                <span className="gsap-parallax-badge inline-block text-xs font-code text-blue-400 tracking-widest uppercase">06 // DIRECT CONTACT & TRANSMISSION</span>
+                <h2 className="gsap-parallax-title text-3xl sm:text-4xl font-bold text-white tracking-tight">Get In Touch</h2>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="gsap-parallax-badge inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-code">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  ONLINE & RESPONDING PROMPTLY
+                </span>
               </div>
             </div>
           </RevealOnScroll>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            {/* Direct Information */}
+            {/* Direct Channels Column */}
             <div className="lg:col-span-5 space-y-4">
               <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/[0.08] space-y-4">
                 <div className="space-y-1">
-                  <h3 className="text-lg font-bold text-white">Let's Build Together</h3>
+                  <h3 className="text-lg font-bold text-white">Direct Transmission Hub</h3>
                   <p className="text-xs text-white/60 leading-relaxed font-light">
-                    Open for high-impact security initiatives, full-stack engineering, and data systems.
+                    Reach me directly on Gmail or send a message on WhatsApp for instant discussions, project collaborations, or security audits.
                   </p>
                 </div>
 
+                {/* Direct Action Hub */}
                 <div className="space-y-3 pt-2">
-                  <button
-                    onClick={handleCopyEmail}
-                    className="w-full p-3.5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 flex items-center justify-between text-xs font-code text-white transition-all cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <Mail className="w-4 h-4 text-blue-400" />
-                      <span>{PORTFOLIO_PROFILE.email}</span>
+                  
+                  {/* 1. Gmail Direct Card */}
+                  <div className="p-4 rounded-2xl bg-gradient-to-br from-red-950/20 via-white/[0.02] to-transparent border border-red-500/20 hover:border-red-500/40 transition-all space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-xs font-bold text-white">
+                        <div className="w-7 h-7 rounded-lg bg-red-600/20 border border-red-500/30 flex items-center justify-center text-red-400">
+                          <Mail className="w-3.5 h-3.5" />
+                        </div>
+                        <span>Gmail Inbox</span>
+                      </div>
+                      <span className="text-[10px] font-code text-red-400/80 uppercase">Primary</span>
                     </div>
-                    <span className="text-[10px] text-white/50">
-                      {copiedEmail ? 'COPIED!' : 'COPY'}
-                    </span>
-                  </button>
 
-                  <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center gap-2.5 text-xs font-code text-white/80">
-                    <MapPin className="w-4 h-4 text-emerald-400" />
-                    <span>{PORTFOLIO_PROFILE.location}</span>
+                    <div className="text-xs font-code text-white/80 select-all truncate pl-1">
+                      {PORTFOLIO_PROFILE.email}
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-1">
+                      <a
+                        href={PORTFOLIO_PROFILE.getGmailUrl()}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 py-2 px-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-code text-xs font-semibold text-center transition-colors flex items-center justify-center gap-1.5 shadow-lg shadow-red-900/20 cursor-pointer"
+                      >
+                        <Mail className="w-3.5 h-3.5" />
+                        <span>Open in Gmail</span>
+                        <ExternalLink className="w-3 h-3 opacity-70" />
+                      </a>
+                      <button
+                        onClick={handleCopyEmail}
+                        className="p-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 text-white transition-colors cursor-pointer"
+                        title="Copy Email Address"
+                      >
+                        {copiedEmail ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-white/70" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 2. WhatsApp Direct Card */}
+                  <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-950/20 via-white/[0.02] to-transparent border border-emerald-500/20 hover:border-emerald-500/40 transition-all space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-xs font-bold text-white">
+                        <div className="w-7 h-7 rounded-lg bg-emerald-600/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                          <MessageCircle className="w-3.5 h-3.5" />
+                        </div>
+                        <span>WhatsApp Chat</span>
+                      </div>
+                      <span className="text-[10px] font-code text-emerald-400/80 uppercase">Instant</span>
+                    </div>
+
+                    <div className="text-xs font-code text-white/80 select-all truncate pl-1">
+                      {PORTFOLIO_PROFILE.whatsappNumber || PORTFOLIO_PROFILE.phone}
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-1">
+                      <a
+                        href={PORTFOLIO_PROFILE.getWhatsAppUrl()}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-code text-xs font-semibold text-center transition-colors flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-900/20 cursor-pointer"
+                      >
+                        <MessageCircle className="w-3.5 h-3.5" />
+                        <span>Chat on WhatsApp</span>
+                        <ExternalLink className="w-3 h-3 opacity-70" />
+                      </a>
+                      <button
+                        onClick={handleCopyWhatsApp}
+                        className="p-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 text-white transition-colors cursor-pointer"
+                        title="Copy WhatsApp Number"
+                      >
+                        {copiedWhatsApp ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-white/70" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Location Card */}
+                  <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-between text-xs font-code text-white/80">
+                    <div className="flex items-center gap-2.5">
+                      <MapPin className="w-4 h-4 text-blue-400" />
+                      <span>{PORTFOLIO_PROFILE.location}</span>
+                    </div>
+                    <span className="text-[10px] text-white/40 font-mono">IST (UTC+5:30)</span>
                   </div>
                 </div>
 
-                {/* Social Links */}
+                {/* Social Profiles */}
                 <div className="flex items-center gap-2 pt-2">
                   <a
                     href={PORTFOLIO_PROFILE.github}
@@ -1144,72 +1479,124 @@ export const CyberSodaLayout: React.FC = () => {
                   >
                     <Linkedin className="w-3.5 h-3.5" /> LinkedIn
                   </a>
+                  <a
+                    href={PORTFOLIO_PROFILE.instagram}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-3 rounded-2xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 text-center text-xs font-code text-white transition-all flex items-center justify-center"
+                    title="Instagram"
+                  >
+                    <Instagram className="w-3.5 h-3.5" />
+                  </a>
                 </div>
               </div>
             </div>
 
-            {/* Transmission Contact Form */}
+            {/* Transmission Contact Form Column */}
             <div className="lg:col-span-7">
-              <form 
-                onSubmit={handleContactSubmit}
-                className="p-6 sm:p-8 rounded-3xl bg-[#090c12] border border-white/10 space-y-4 shadow-2xl"
-              >
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="p-6 sm:p-8 rounded-3xl bg-[#090c12] border border-white/10 space-y-5 shadow-2xl relative">
+                
+                <div className="flex items-center justify-between border-b border-white/[0.08] pb-3">
+                  <div>
+                    <h4 className="text-sm font-bold text-white">Send Direct Message</h4>
+                    <p className="text-xs text-white/50">Choose to send directly to Gmail or message on WhatsApp.</p>
+                  </div>
+                  <span className="text-[10px] font-code px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                    256-BIT ENCRYPTED
+                  </span>
+                </div>
+
+                <form onSubmit={handleContactSubmit} className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-code text-white/60">YOUR NAME *</label>
+                      <input 
+                        type="text"
+                        required
+                        value={contactForm.name}
+                        onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
+                        placeholder="e.g. Alex Morgan"
+                        className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-white text-xs font-code focus:outline-none focus:border-blue-400 transition-colors"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-code text-white/60">YOUR EMAIL *</label>
+                      <input 
+                        type="email"
+                        required
+                        value={contactForm.email}
+                        onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
+                        placeholder="e.g. alex@enterprise.com"
+                        className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-white text-xs font-code focus:outline-none focus:border-blue-400 transition-colors"
+                      />
+                    </div>
+                  </div>
+
                   <div className="space-y-1.5">
-                    <label className="text-[11px] font-code text-white/60">YOUR NAME</label>
+                    <label className="text-[11px] font-code text-white/60">SUBJECT</label>
                     <input 
                       type="text"
-                      required
-                      value={contactForm.name}
-                      onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
-                      placeholder="e.g. Alex Morgan"
+                      value={contactForm.subject}
+                      onChange={(e) => setContactForm({ ...contactForm, subject: e.target.value })}
+                      placeholder="e.g. Web & App Development / Security Architecture"
                       className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-white text-xs font-code focus:outline-none focus:border-blue-400 transition-colors"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[11px] font-code text-white/60">YOUR EMAIL</label>
-                    <input 
-                      type="email"
+                    <label className="text-[11px] font-code text-white/60">YOUR MESSAGE *</label>
+                    <textarea 
+                      rows={4}
                       required
-                      value={contactForm.email}
-                      onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
-                      placeholder="e.g. alex@enterprise.com"
-                      className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-white text-xs font-code focus:outline-none focus:border-blue-400 transition-colors"
+                      value={contactForm.message}
+                      onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
+                      placeholder="Describe your technical requirements, project scope, or opportunity..."
+                      className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-white text-xs font-code focus:outline-none focus:border-blue-400 transition-colors resize-none"
                     />
                   </div>
-                </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-code text-white/60">TRANSMISSION MESSAGE</label>
-                  <textarea 
-                    rows={4}
-                    required
-                    value={contactForm.message}
-                    onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
-                    placeholder="Describe project requirements, scope, or collaboration..."
-                    className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-white text-xs font-code focus:outline-none focus:border-blue-400 transition-colors resize-none"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={contactSubmitted}
-                  className="w-full py-3.5 rounded-2xl bg-white text-black hover:bg-white/90 font-bold text-xs tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xl disabled:opacity-50"
-                >
-                  {contactSubmitted ? (
-                    <>
-                      <Check className="w-4 h-4 text-emerald-600" />
-                      TRANSMISSION SENT SUCCESSFULLY
-                    </>
-                  ) : (
-                    <>
-                      <Send className="w-4 h-4" />
-                      SEND TRANSMISSION
-                    </>
+                  {contactSubmitted && (
+                    <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-code flex items-center gap-2.5 animate-fade-in">
+                      <Check className="w-4 h-4 shrink-0" />
+                      <span>
+                        {contactDispatchMode === 'whatsapp' 
+                          ? 'Opening WhatsApp with your pre-filled message...'
+                          : 'Opening Gmail with your message drafted to sathyasaijs12@gmail.com!'}
+                      </span>
+                    </div>
                   )}
-                </button>
-              </form>
+
+                  {/* Dual Action Buttons */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                    
+                    {/* Send to Gmail Button */}
+                    <button
+                      type="button"
+                      onClick={() => handleSendViaGmail()}
+                      className="py-3.5 px-4 rounded-2xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-bold text-xs tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-red-900/30 active:scale-98"
+                    >
+                      <Mail className="w-4 h-4 text-white" />
+                      <span>SEND VIA GMAIL</span>
+                    </button>
+
+                    {/* Message on WhatsApp Button */}
+                    <button
+                      type="button"
+                      onClick={() => handleSendViaWhatsApp()}
+                      className="py-3.5 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-emerald-900/30 active:scale-98"
+                    >
+                      <MessageCircle className="w-4 h-4 text-white" />
+                      <span>MESSAGE ON WHATSAPP</span>
+                    </button>
+
+                  </div>
+
+                  <p className="text-[10px] text-center font-code text-white/40 pt-1">
+                    Direct recipient: <span className="text-white/70">{PORTFOLIO_PROFILE.email}</span> • Instant responses within hours
+                  </p>
+                </form>
+              </div>
             </div>
           </div>
         </section>
@@ -1217,10 +1604,66 @@ export const CyberSodaLayout: React.FC = () => {
       </div>
 
       {/* =========================================================================
+          FLOATING QUICK CONNECT DOCK (WhatsApp, Gmail & Fullscreen Quick Launchers)
+          ========================================================================= */}
+      <aside aria-label="Quick Connect Actions" className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-2.5 pointer-events-auto select-none">
+        
+        {/* Fullscreen Quick Button */}
+        <button
+          onClick={toggleFullscreen}
+          className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/[0.08] hover:bg-white/[0.16] backdrop-blur-xl border border-white/20 text-white shadow-xl transition-all duration-300 transform hover:scale-105 cursor-pointer font-bold text-xs"
+          title={isFullscreen ? "Exit Full Screen (Esc)" : "Fit in Full Screen"}
+        >
+          {isFullscreen ? (
+            <>
+              <Minimize2 className="w-3.5 h-3.5 text-blue-400" />
+              <span className="hidden sm:inline font-mono text-[11px]">Exit Fullscreen</span>
+            </>
+          ) : (
+            <>
+              <Maximize2 className="w-3.5 h-3.5 text-white/90" />
+              <span className="hidden sm:inline font-mono text-[11px]">Fullscreen</span>
+            </>
+          )}
+        </button>
+
+        {/* WhatsApp Quick Trigger */}
+        <a
+          href={PORTFOLIO_PROFILE.getWhatsAppUrl()}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => cyberAudio.playKeyClick()}
+          className="group flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-[#25D366] hover:bg-[#20ba59] text-white shadow-[0_8px_25px_rgba(37,211,102,0.45)] transition-all duration-300 transform hover:scale-105 cursor-pointer font-bold text-xs"
+          title="Message me on WhatsApp"
+        >
+          <span className="relative flex h-2.5 w-2.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white"></span>
+          </span>
+          <MessageCircle className="w-4 h-4 shrink-0" />
+          <span className="hidden sm:inline tracking-wide font-mono">WhatsApp Me</span>
+        </a>
+
+        {/* Gmail Quick Trigger */}
+        <a
+          href={PORTFOLIO_PROFILE.getGmailUrl()}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => cyberAudio.playKeyClick()}
+          className="group flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-[#EA4335] hover:bg-[#d93025] text-white shadow-[0_8px_25px_rgba(234,67,53,0.45)] transition-all duration-300 transform hover:scale-105 cursor-pointer font-bold text-xs"
+          title="Email me in Gmail"
+        >
+          <Mail className="w-4 h-4 shrink-0" />
+          <span className="hidden sm:inline tracking-wide font-mono">Email via Gmail</span>
+        </a>
+
+      </aside>
+
+      {/* =========================================================================
           SLEEK FOOTER
           ========================================================================= */}
       <footer className="border-t border-white/[0.08] py-8 bg-[#030408] text-center text-xs font-code text-white/40">
-        <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div>
             © {new Date().getFullYear()} {PORTFOLIO_PROFILE.name}. All rights reserved.
           </div>

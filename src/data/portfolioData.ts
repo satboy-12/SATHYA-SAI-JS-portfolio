@@ -67,8 +67,10 @@ export const PORTFOLIO_PROFILE = {
   
   // Contact & Location
   email: "sathyasaijs12@gmail.com",
-  phone: "+91 12345 67890",
-  whatsapp: "+91 12345 67890",
+  phone: "+91 73056 62449",
+  whatsappNumber: "+91 73056 62449",
+  whatsappRaw: "917305662449",
+  whatsapp: "https://wa.me/917305662449",
   location: "Chennai, Tamil Nadu, India",
   linkedin: "https://www.linkedin.com/in/sathya-sai-js",
   instagram: "https://instagram.com/sathya_sai_js",
@@ -79,8 +81,27 @@ export const PORTFOLIO_PROFILE = {
     linkedin: "https://www.linkedin.com/in/sathya-sai-js",
     github: "https://github.com/satboy-12",
     instagram: "https://instagram.com/sathya_sai_js",
-    whatsapp: "https://wa.me/911234567890",
-    email: "mailto:sathyasaijs12@gmail.com"
+    whatsapp: "https://wa.me/917305662449",
+    email: "mailto:sathyasaijs12@gmail.com",
+    gmail: "https://mail.google.com/mail/?view=cm&fs=1&to=sathyasaijs12@gmail.com"
+  },
+
+  // Helper generators for instant contact
+  getGmailUrl: (subject = "Project Inquiry / Collaboration", body = "") => {
+    const encodedSubject = encodeURIComponent(subject);
+    const encodedBody = encodeURIComponent(body);
+    return `https://mail.google.com/mail/?view=cm&fs=1&to=sathyasaijs12@gmail.com&su=${encodedSubject}&body=${encodedBody}`;
+  },
+
+  getMailtoUrl: (subject = "Project Inquiry / Collaboration", body = "") => {
+    const encodedSubject = encodeURIComponent(subject);
+    const encodedBody = encodeURIComponent(body);
+    return `mailto:sathyasaijs12@gmail.com?subject=${encodedSubject}&body=${encodedBody}`;
+  },
+
+  getWhatsAppUrl: (text = "Hi Sathya Sai JS, I came across your portfolio and would like to connect!") => {
+    const encodedText = encodeURIComponent(text);
+    return `https://wa.me/917305662449?text=${encodedText}`;
   },
 
   // Key Numerical Stats

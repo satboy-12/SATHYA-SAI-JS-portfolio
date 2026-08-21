@@ -879,6 +879,9 @@ export const Cyber3DScrollCanvas: React.FC<Cyber3DScrollCanvasProps> = ({
       rendererRef.current.setSize(w, h);
     };
     window.addEventListener('resize', onResize);
+    window.addEventListener('fullscreenchange', onResize);
+    window.addEventListener('webkitfullscreenchange', onResize);
+    window.addEventListener('orientationchange', onResize);
 
     // 9. 60FPS CINEMATIC RENDER LOOP
     let animId: number;
@@ -1050,6 +1053,9 @@ export const Cyber3DScrollCanvas: React.FC<Cyber3DScrollCanvasProps> = ({
       cancelAnimationFrame(animId);
       window.removeEventListener('mousemove', onPointerMove);
       window.removeEventListener('resize', onResize);
+      window.removeEventListener('fullscreenchange', onResize);
+      window.removeEventListener('webkitfullscreenchange', onResize);
+      window.removeEventListener('orientationchange', onResize);
       if (rendererRef.current && rendererRef.current.domElement && mountRef.current) {
         mountRef.current.innerHTML = '';
         rendererRef.current.dispose();

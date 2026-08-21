@@ -43,10 +43,10 @@ const PRESET_SCRIPTS = [
   { label: 'npm run build', cmd: 'npm run build --analyze' },
   { label: 'npm run dev', cmd: 'npm run dev' },
   { label: 'curl /v1/auth', cmd: 'curl https://api.sathya.dev/v1/auth' },
-  { label: 'cat bio.md', cmd: 'cat bio.md' },
+  { label: 'whatsapp', cmd: 'whatsapp' },
+  { label: 'gmail', cmd: 'gmail' },
   { label: 'skills', cmd: 'skills' },
   { label: 'projects', cmd: 'projects' },
-  { label: 'certifications', cmd: 'certifications' },
   { label: 'contact', cmd: 'contact' },
   { label: 'clear', cmd: 'clear' }
 ];
@@ -161,11 +161,25 @@ export const InteractiveTerminal: React.FC<InteractiveTerminalProps> = ({
             text: `✔ [${c.year}] ${c.title} — ${c.issuer} (ID: ${c.credentialId})`
           }))
         ];
+      } else if (lower === 'whatsapp' || lower.includes('wa')) {
+        window.open(PORTFOLIO_PROFILE.getWhatsAppUrl(), '_blank');
+        outputLines = [
+          { id: Math.random().toString(), type: 'info', text: '=== WHATSAPP DIRECT SECURE CHANNEL ===' },
+          { id: Math.random().toString(), type: 'success', text: `✔ Opening WhatsApp chat with ${PORTFOLIO_PROFILE.name} (${PORTFOLIO_PROFILE.whatsappNumber || PORTFOLIO_PROFILE.phone})` },
+          { id: Math.random().toString(), type: 'output', text: `Direct Link: ${PORTFOLIO_PROFILE.whatsapp}` }
+        ];
+      } else if (lower === 'gmail' || lower === 'email') {
+        window.open(PORTFOLIO_PROFILE.getGmailUrl(), '_blank');
+        outputLines = [
+          { id: Math.random().toString(), type: 'info', text: '=== GMAIL INBOX TRANSMISSION ===' },
+          { id: Math.random().toString(), type: 'success', text: `✔ Opening Gmail web composer to ${PORTFOLIO_PROFILE.email}` },
+          { id: Math.random().toString(), type: 'output', text: `Inbox: ${PORTFOLIO_PROFILE.email}` }
+        ];
       } else if (lower === 'contact' || lower.includes('mail')) {
         outputLines = [
           { id: Math.random().toString(), type: 'info', text: '=== TRANSMISSION ENDPOINTS ===' },
-          { id: Math.random().toString(), type: 'output', text: `EMAIL:    ${PORTFOLIO_PROFILE.email}` },
-          { id: Math.random().toString(), type: 'output', text: `PHONE:    ${PORTFOLIO_PROFILE.phone}` },
+          { id: Math.random().toString(), type: 'output', text: `GMAIL:    ${PORTFOLIO_PROFILE.email} (Type "gmail" to compose)` },
+          { id: Math.random().toString(), type: 'output', text: `WHATSAPP: ${PORTFOLIO_PROFILE.whatsappNumber || PORTFOLIO_PROFILE.phone} (Type "whatsapp" to chat)` },
           { id: Math.random().toString(), type: 'output', text: `LOCATION: ${PORTFOLIO_PROFILE.location}` },
           { id: Math.random().toString(), type: 'output', text: `LINKEDIN: ${PORTFOLIO_PROFILE.linkedin}` },
           { id: Math.random().toString(), type: 'output', text: `GITHUB:   ${PORTFOLIO_PROFILE.github}` }

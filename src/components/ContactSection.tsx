@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PORTFOLIO_PROFILE } from '../data/portfolioData';
-import { Mail, MapPin, MessageCircle, Send, CheckCircle2, Linkedin, Github, Instagram } from 'lucide-react';
+import { Mail, MapPin, MessageCircle, Send, CheckCircle2, Linkedin, Github, Instagram, ExternalLink, Copy, Check } from 'lucide-react';
 import { cyberAudio } from '../utils/soundEngine';
 import { ProfileImage } from './ProfileImage';
 
@@ -17,20 +17,75 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ onNavigate }) =>
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submitMode, setSubmitMode] = useState<'gmail' | 'whatsapp' | null>(null);
+  const [copiedEmail, setCopiedEmail] = useState(false);
+  const [copiedWA, setCopiedWA] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name || !formData.email || !formData.message) return;
+  const handleCopyEmail = () => {
+    cyberAudio.playKeyClick();
+    navigator.clipboard.writeText(PORTFOLIO_PROFILE.email);
+    setCopiedEmail(true);
+    setTimeout(() => setCopiedEmail(false), 2000);
+  };
 
+  const handleCopyWA = () => {
+    cyberAudio.playKeyClick();
+    navigator.clipboard.writeText(PORTFOLIO_PROFILE.whatsappNumber || PORTFOLIO_PROFILE.phone);
+    setCopiedWA(true);
+    setTimeout(() => setCopiedWA(false), 2000);
+  };
+
+  const handleSendGmail = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     cyberAudio.playScannerGliss();
     setIsSubmitting(true);
+    setSubmitMode('gmail');
+
+    const subject = formData.subject || `Project Inquiry from ${formData.name || 'Visitor'}`;
+    const body = `Hello Sathya Sai JS,\n\nName: ${formData.name}\nEmail: ${formData.email}\nSubject: ${subject}\n\nMessage:\n${formData.message}`;
+    const url = PORTFOLIO_PROFILE.getGmailUrl(subject, body);
+    
+    window.open(url, '_blank');
 
     setTimeout(() => {
       setIsSubmitting(false);
       setIsSubmitted(true);
-      setFormData({ name: '', email: '', subject: '', message: '' });
-      setTimeout(() => setIsSubmitted(false), 6000);
-    }, 1200);
+      setTimeout(() => {
+        setIsSubmitted(false);
+        setSubmitMode(null);
+        setFormData({ name: '', email: '', subject: '', message: '' });
+      }, 5000);
+    }, 600);
+  };
+
+  const handleSendWhatsApp = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    cyberAudio.playScannerGliss();
+    setIsSubmitting(true);
+    setSubmitMode('whatsapp');
+
+    const nameStr = formData.name ? `*Name:* ${formData.name}\n` : '';
+    const emailStr = formData.email ? `*Email:* ${formData.email}\n` : '';
+    const msgStr = formData.message ? `*Message:*\n${formData.message}` : `Hi Sathya Sai JS, I would like to connect!`;
+    const fullText = `👋 Hello Sathya Sai JS!\n\n${nameStr}${emailStr}${msgStr}`;
+
+    const url = PORTFOLIO_PROFILE.getWhatsAppUrl(fullText);
+    window.open(url, '_blank');
+
+    setTimeout(() => {
+      setIsSubmitting(false);
+      setIsSubmitted(true);
+      setTimeout(() => {
+        setIsSubmitted(false);
+        setSubmitMode(null);
+        setFormData({ name: '', email: '', subject: '', message: '' });
+      }, 5000);
+    }, 600);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleSendGmail(e);
   };
 
   const socialLinks = [
@@ -38,7 +93,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ onNavigate }) =>
     { name: 'GitHub', icon: <Github className="w-4 h-4" />, href: PORTFOLIO_PROFILE.socials.github },
     { name: 'Instagram', icon: <Instagram className="w-4 h-4" />, href: PORTFOLIO_PROFILE.socials.instagram },
     { name: 'WhatsApp', icon: <MessageCircle className="w-4 h-4" />, href: PORTFOLIO_PROFILE.socials.whatsapp },
-    { name: 'Email', icon: <Mail className="w-4 h-4" />, href: PORTFOLIO_PROFILE.socials.email },
+    { name: 'Gmail', icon: <Mail className="w-4 h-4" />, href: PORTFOLIO_PROFILE.socials.gmail || `mailto:${PORTFOLIO_PROFILE.email}` },
   ];
 
   return (
@@ -190,14 +245,32 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ onNavigate }) =>
                 </div>
               )}
 
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full py-3.5 rounded-xl bg-[#6E2634] hover:bg-[#8C2735] text-white font-mono text-xs font-bold tracking-widest uppercase transition-all duration-300 shadow-[0_0_20px_rgba(110,38,52,0.4)] flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <Send className="w-4 h-4 text-[#D6B47A]" />
-                <span>{isSubmitting ? 'TRANSMITTING...' : 'SEND MESSAGE'}</span>
-              </button>
+              {/* Dual Action Buttons */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => handleSendGmail()}
+                  disabled={isSubmitting}
+                  className="w-full py-3.5 rounded-xl bg-[#6E2634] hover:bg-[#8C2735] text-white font-mono text-xs font-bold tracking-wider uppercase transition-all duration-300 shadow-[0_0_20px_rgba(110,38,52,0.4)] flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Mail className="w-4 h-4 text-[#D6B47A]" />
+                  <span>{isSubmitting && submitMode === 'gmail' ? 'OPENING GMAIL...' : 'SEND VIA GMAIL'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleSendWhatsApp()}
+                  disabled={isSubmitting}
+                  className="w-full py-3.5 rounded-xl bg-[#25D366] hover:bg-[#20ba59] text-white font-mono text-xs font-bold tracking-wider uppercase transition-all duration-300 shadow-[0_0_20px_rgba(37,211,102,0.4)] flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <MessageCircle className="w-4 h-4 text-white" />
+                  <span>{isSubmitting && submitMode === 'whatsapp' ? 'OPENING WHATSAPP...' : 'WHATSAPP MESSAGE'}</span>
+                </button>
+              </div>
+
+              <p className="text-[11px] font-mono text-center text-[#120D0E]/60 pt-1">
+                Direct to <span className="font-bold text-[#6E2634]">{PORTFOLIO_PROFILE.email}</span> • Instant responses
+              </p>
 
             </form>
 
