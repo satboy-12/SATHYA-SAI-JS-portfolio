@@ -1,170 +1,186 @@
 import React, { useState, useEffect } from 'react';
-import { PORTFOLIO_PROFILE } from '../data/portfolioData';
-import { Menu, X, ArrowUpRight, Volume2, VolumeX } from 'lucide-react';
-import { cyberAudio } from '../utils/soundEngine';
+import { Sun, Moon, Menu, X, FileText } from 'lucide-react';
+import { portfolioData } from '../data/portfolioData';
 
 interface NavbarProps {
-  activeSection: string;
-  onNavigate: (sectionId: string) => void;
-  isMuted?: boolean;
-  onToggleMute?: () => void;
+  onOpenResume: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({
-  activeSection,
-  onNavigate,
-  isMuted = false,
-  onToggleMute,
-}) => {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+export const Navbar: React.FC<NavbarProps> = ({ onOpenResume }) => {
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+  const [activeSection, setActiveSection] = useState('home');
 
   useEffect(() => {
+    // Check initial theme from html attribute or default to dark
+    const currentTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+    setTheme(currentTheme);
+
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 40);
+      setScrolled(window.scrollY > 30);
+
+      const sections = ['home', 'about', 'skills', 'projects', 'journey', 'contact'];
+      for (const sectionId of sections) {
+        const el = document.getElementById(sectionId);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          if (rect.top <= window.innerHeight * 0.45 && rect.bottom >= window.innerHeight * 0.15) {
+            setActiveSection(sectionId);
+          }
+        }
+      }
     };
+
     window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navItems = [
-    { id: 'about', label: 'ABOUT' },
-    { id: 'work', label: 'WORK' },
-    { id: 'experience', label: 'EXPERIENCE' },
-    { id: 'skills', label: 'SKILLS' },
-    { id: 'contact', label: 'CONTACT' },
-  ];
-
-  const handleItemClick = (id: string) => {
-    cyberAudio.playKeyClick();
-    onNavigate(id);
-    setIsMobileMenuOpen(false);
+  const toggleTheme = () => {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(nextTheme);
+    document.documentElement.setAttribute('data-theme', nextTheme);
   };
+
+  const navItems = [
+    { label: 'Home', href: '#home', id: 'home', num: '01' },
+    { label: 'About', href: '#about', id: 'about', num: '02' },
+    { label: 'Skills', href: '#skills', id: 'skills', num: '03' },
+    { label: 'Projects', href: '#projects', id: 'projects', num: '04' },
+    { label: 'Experience', href: '#journey', id: 'journey', num: '05' },
+    { label: 'Contact', href: '#contact', id: 'contact', num: '06' },
+  ];
 
   return (
     <>
       <header
-        className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 select-none ${
-          isScrolled
-            ? 'py-3.5 bg-[#120D0E]/85 backdrop-blur-md border-b border-[#D6B47A]/15 shadow-[0_10px_30px_rgba(0,0,0,0.5)]'
-            : 'py-6 bg-transparent'
+        id="header"
+        className={`fixed top-0 left-0 right-0 h-[72px] z-[200] flex items-center transition-all duration-400 ${
+          scrolled
+            ? 'bg-[var(--bg)]/85 backdrop-blur-md border-b border-[var(--line)] shadow-lg'
+            : 'bg-transparent border-b border-transparent'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-6 sm:px-10 flex items-center justify-between">
-          
-          {/* Left: Brand Identity */}
-          <div
-            onClick={() => handleItemClick('hero')}
-            className="flex items-center gap-3 cursor-pointer group"
+        <div className="w-full max-w-[1300px] mx-auto px-5 sm:px-8 md:px-12 flex items-center justify-between gap-6">
+          {/* Logo */}
+          <a
+            href="#home"
+            className="font-disp font-bold text-lg md:text-xl tracking-tight flex items-center gap-2.5 group"
           >
-            <span className="font-display font-black text-2xl tracking-tighter text-white group-hover:text-[#D6B47A] transition-colors">
-              {PORTFOLIO_PROFILE.brandShort}
-            </span>
-            <span className="hidden sm:inline font-mono text-xs tracking-[0.25em] text-white/80 uppercase font-semibold group-hover:text-white transition-colors">
-              {PORTFOLIO_PROFILE.name}
-            </span>
-          </div>
+            <i className="w-2.5 h-2.5 rounded-full bg-[#ff7a29] inline-block shadow-[0_0_12px_#ff7a29] group-hover:scale-125 transition-transform duration-300" />
+            <span className="text-[var(--txt)]">{portfolioData.logoInitials}</span>
+          </a>
 
-          {/* Center: Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-8 lg:gap-10">
-            {navItems.map((item) => {
-              const isActive = activeSection === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => handleItemClick(item.id)}
-                  className={`font-mono text-xs tracking-[0.2em] uppercase font-semibold transition-all duration-300 relative py-1 cursor-pointer ${
-                    isActive
-                      ? 'text-[#D6B47A]'
-                      : 'text-white/70 hover:text-white'
-                  }`}
-                >
-                  {item.label}
-                  {isActive && (
-                    <span className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-[#D6B47A] rounded-full shadow-[0_0_8px_#D6B47A]" />
-                  )}
-                </button>
-              );
-            })}
+          {/* Desktop Navigation Links */}
+          <nav className="hidden lg:flex items-center gap-8">
+            <ul className="flex items-center gap-7 list-none m-0 p-0">
+              {navItems.map((item) => {
+                const isActive = activeSection === item.id;
+                return (
+                  <li key={item.id}>
+                    <a
+                      href={item.href}
+                      className={`font-mono-code text-[0.74rem] uppercase tracking-[0.2em] relative py-1.5 transition-colors duration-300 block ${
+                        isActive
+                          ? 'text-[var(--txt)]'
+                          : 'text-[var(--mut)] hover:text-[var(--txt)]'
+                      }`}
+                    >
+                      {item.label}
+                      <span
+                        className={`absolute left-0 bottom-0 h-[1.5px] bg-[#ff7a29] transition-all duration-300 ease-out ${
+                          isActive ? 'w-full' : 'w-0 hover:w-full'
+                        }`}
+                      />
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
           </nav>
 
-          {/* Right: Sound Toggle + Availability Badge & Mobile Menu Toggle */}
-          <div className="flex items-center gap-3 sm:gap-4">
-            
-            {/* Ambient Sound Toggle */}
-            {onToggleMute && (
-              <button
-                onClick={onToggleMute}
-                className="p-2 rounded-full bg-white/5 hover:bg-[#6E2634] text-white/80 hover:text-white border border-[#D6B47A]/30 transition-colors cursor-pointer"
-                title={isMuted ? 'Unmute UI Audio' : 'Mute UI Audio'}
-              >
-                {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5 text-[#D6B47A]" />}
-              </button>
-            )}
-
-            {/* Availability Pill */}
+          {/* Action Tools */}
+          <div className="flex items-center gap-3">
+            {/* Resume Action */}
             <button
-              onClick={() => handleItemClick('contact')}
-              className="hidden sm:flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-[#D6B47A]/40 bg-[#D6B47A]/5 hover:bg-[#D6B47A]/15 text-[#D6B47A] font-mono text-[10px] sm:text-[11px] font-semibold tracking-wider transition-all duration-300 cursor-pointer shadow-[0_0_15px_rgba(214,180,122,0.1)] hover:shadow-[0_0_20px_rgba(214,180,122,0.25)]"
+              onClick={onOpenResume}
+              className="hidden sm:inline-flex items-center gap-2 font-mono-code text-[0.72rem] tracking-[0.16em] uppercase px-3.5 py-1.5 border border-[var(--line2)] rounded-sm text-[var(--mut)] hover:text-[#ff7a29] hover:border-[#ff7a29] transition-all duration-300"
+              title="Open Resume Dossier"
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] animate-pulse" />
-              <span>{PORTFOLIO_PROFILE.availabilityStatus}</span>
+              <FileText className="w-3.5 h-3.5" />
+              <span>Resume</span>
             </button>
 
-            {/* Mobile Hamburger Toggle */}
+            {/* Theme Toggle */}
             <button
-              onClick={() => {
-                cyberAudio.playKeyClick();
-                setIsMobileMenuOpen(!isMobileMenuOpen);
-              }}
-              className="md:hidden p-2 rounded-lg text-white/90 hover:text-[#D6B47A] transition-colors cursor-pointer"
-              aria-label="Toggle Menu"
+              onClick={toggleTheme}
+              className="w-[38px] h-[38px] border border-[var(--line)] rounded-full flex items-center justify-center text-[var(--mut)] hover:text-[#ff7a29] hover:border-[#ff7a29] hover:-translate-y-0.5 transition-all duration-300"
+              aria-label="Toggle Theme"
             >
-              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {theme === 'dark' ? (
+                <Sun className="w-4 h-4" />
+              ) : (
+                <Moon className="w-4 h-4" />
+              )}
             </button>
 
+            {/* Mobile Menu Toggle Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden w-[38px] h-[38px] border border-[var(--line)] rounded-full flex items-center justify-center text-[var(--mut)] hover:text-[#ff7a29] hover:border-[#ff7a29] transition-all duration-300"
+              aria-label="Toggle mobile menu"
+            >
+              {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            </button>
           </div>
-
         </div>
       </header>
 
-      {/* Fullscreen Mobile Navigation Menu Overlay */}
-      {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-40 bg-[#0B0A0A]/95 backdrop-blur-xl flex flex-col justify-between p-8 pt-28 md:hidden animate-fade-in">
-          
-          <div className="space-y-6">
-            <div className="font-mono text-xs text-[#D6B47A] tracking-widest uppercase">
-              NAVIGATION
-            </div>
-            
-            <nav className="flex flex-col space-y-4">
-              {navItems.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => handleItemClick(item.id)}
-                  className="flex items-center justify-between text-left font-display font-bold text-2xl text-white hover:text-[#D6B47A] transition-colors py-2 border-b border-white/10"
-                >
-                  <span>{item.label}</span>
-                  <ArrowUpRight className="w-5 h-5 text-[#D6B47A]" />
-                </button>
-              ))}
-            </nav>
-          </div>
+      {/* Circle-Reveal Mobile Menu */}
+      <div
+        id="mobileMenu"
+        className={`fixed inset-0 bg-[var(--bg)] z-[190] flex flex-col justify-center px-10 gap-3 transition-all duration-700 ease-[cubic-bezier(0.22,0.8,0.24,1)] ${
+          mobileMenuOpen
+            ? 'opacity-100 visible'
+            : 'opacity-0 invisible pointer-events-none'
+        }`}
+        style={{
+          clipPath: mobileMenuOpen
+            ? 'circle(150% at calc(100% - 44px) 44px)'
+            : 'circle(0 at calc(100% - 44px) 44px)',
+        }}
+      >
+        <div className="max-w-md w-full mx-auto space-y-2">
+          {navItems.map((item) => (
+            <a
+              key={item.id}
+              href={item.href}
+              onClick={() => setMobileMenuOpen(false)}
+              className="font-disp font-bold text-3xl sm:text-4xl py-3 text-[var(--mut)] hover:text-[var(--txt)] flex items-baseline gap-4 border-b border-[var(--line)] transition-all duration-300 hover:translate-x-3"
+            >
+              <b className="font-mono-code font-normal text-xs text-[#ff7a29]">
+                {item.num}
+              </b>
+              <span>{item.label.toUpperCase()}</span>
+            </a>
+          ))}
 
-          <div className="space-y-4 pt-8 border-t border-white/10">
-            <div className="font-mono text-xs text-white/50 tracking-wider">
-              {PORTFOLIO_PROFILE.email}
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="w-2 h-2 rounded-full bg-[#10b981]" />
-              <span className="font-mono text-xs text-[#D6B47A] font-semibold">
-                AVAILABLE FOR ROLES & FREELANCE
-              </span>
-            </div>
+          <div className="pt-6">
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onOpenResume();
+              }}
+              className="w-full flex items-center justify-center gap-3 py-3.5 bg-[#ff7a29] text-[#0b0b0e] font-mono-code font-semibold text-xs tracking-widest uppercase rounded-sm"
+            >
+              <FileText className="w-4 h-4" />
+              <span>Download / View Resume Dossier</span>
+            </button>
           </div>
-
         </div>
-      )}
+      </div>
     </>
   );
 };

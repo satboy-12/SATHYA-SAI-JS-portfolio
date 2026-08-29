@@ -1,36 +1,25 @@
-import React, { useEffect, useRef, useMemo, useState } from 'react';
-import { PORTFOLIO_PROFILE } from '../data/portfolioData';
-import { ArrowRight, Linkedin, Github, Instagram, Mail, MessageCircle } from 'lucide-react';
-import { cyberAudio } from '../utils/soundEngine';
-import { ProfileImage } from './ProfileImage';
+import React, { useEffect, useRef, useState } from 'react';
+import { ArrowRight, Download, Github, Linkedin, Instagram, Mail } from 'lucide-react';
+import { portfolioData } from '../data/portfolioData';
 
 interface HeroSectionProps {
-  onNavigate: (sectionId: string) => void;
+  onOpenResume: () => void;
 }
 
-export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
-  const containerRef = useRef<HTMLElement | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const mousePos = useRef({ x: 0, y: 0, targetX: 0, targetY: 0 });
-  const [isLoaded, setIsLoaded] = useState(false);
+export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenResume }) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const stageWrapRef = useRef<HTMLDivElement>(null);
+  const [activeRailIndex, setActiveRailIndex] = useState<number | null>(0);
 
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoaded(true), 100);
-    return () => clearTimeout(timer);
-  }, []);
+  const railItems = [
+    { num: '01', title: 'Secure', desc: 'Vulnerability assessment, penetration testing, and secure-by-design engineering.' },
+    { num: '02', title: 'Develop', desc: 'Full-stack tools, Python automation, and Streamlit analytical platforms.' },
+    { num: '03', title: 'Analyze', desc: 'Interactive Power BI KPI dashboards and SQL-based data pipelines.' },
+    { num: '04', title: 'Research', desc: 'Blockchain vehicular firmware security presented at SIMATS & SIH Space Tech.' },
+  ];
 
-  // Mouse tracking parallax
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      const { innerWidth, innerHeight } = window;
-      mousePos.current.targetX = (e.clientX / innerWidth - 0.5) * 2;
-      mousePos.current.targetY = (e.clientY / innerHeight - 0.5) * 2;
-    };
-    window.addEventListener('mousemove', handleMouseMove, { passive: true });
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
-
-  // Ambient Gold / Champagne Particles & 3D Orbital Rings Canvas
+  // Canvas particle field
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -38,118 +27,48 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
     if (!ctx) return;
 
     let animId: number;
-    let width = (canvas.width = window.innerWidth);
-    let height = (canvas.height = window.innerHeight);
+    let width = (canvas.width = canvas.offsetWidth);
+    let height = (canvas.height = canvas.offsetHeight);
 
-    const handleResize = () => {
-      if (!canvas) return;
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
-    };
-    window.addEventListener('resize', handleResize);
-
-    // Warm Gold / Champagne Dust Particles
-    const particleCount = window.innerWidth < 768 ? 35 : 75;
-    const particles = Array.from({ length: particleCount }, () => ({
+    const particlesCount = window.innerWidth < 768 ? 40 : 85;
+    const particles = Array.from({ length: particlesCount }, () => ({
       x: Math.random() * width,
       y: Math.random() * height,
-      size: Math.random() * 2 + 0.8,
-      speedX: (Math.random() - 0.5) * 0.2,
-      speedY: (Math.random() - 0.5) * 0.25 - 0.05,
-      baseAlpha: Math.random() * 0.5 + 0.2,
-      color: Math.random() > 0.3 ? '#D6B47A' : '#E8CE9D',
-      phase: Math.random() * Math.PI * 2,
+      r: Math.random() * 1.3 + 0.4,
+      vx: (Math.random() - 0.5) * 0.12,
+      vy: (Math.random() - 0.5) * 0.12,
+      alpha: Math.random() * 0.5 + 0.15,
     }));
 
-    // Gold Orbital Ring Particles
-    const orbitCount = window.innerWidth < 768 ? 40 : 80;
-    const orbitParticles = Array.from({ length: orbitCount }, (_, i) => ({
-      angle: (i / orbitCount) * Math.PI * 2,
-      speed: 0.004 + Math.random() * 0.005,
-      radiusOffset: (Math.random() - 0.5) * 20,
-      verticalOffset: (Math.random() - 0.5) * 15,
-      size: Math.random() * 2.2 + 1,
-      brightness: Math.random() * 0.7 + 0.3,
-      color: Math.random() > 0.3 ? '#D6B47A' : '#F3EBDD',
-    }));
+    const resize = () => {
+      if (!canvas) return;
+      width = canvas.width = canvas.offsetWidth;
+      height = canvas.height = canvas.offsetHeight;
+    };
 
-    let time = 0;
+    window.addEventListener('resize', resize);
 
     const render = () => {
-      time += 0.016;
-
-      mousePos.current.x += (mousePos.current.targetX - mousePos.current.x) * 0.05;
-      mousePos.current.y += (mousePos.current.targetY - mousePos.current.y) * 0.05;
-      const mx = mousePos.current.x;
-      const my = mousePos.current.y;
-
       ctx.clearRect(0, 0, width, height);
 
-      // 1. Ambient Floating Gold Dust
-      for (let i = 0; i < particles.length; i++) {
-        const p = particles[i];
-        p.x += p.speedX + mx * 0.12;
-        p.y += p.speedY + my * 0.08;
-        p.phase += 0.02;
+      const coolColor = getComputedStyle(document.documentElement)
+        .getPropertyValue('--cool')
+        .trim() || '#9fc6e8';
 
-        if (p.y < -20) p.y = height + 20;
-        if (p.x < -20) p.x = width + 20;
-        if (p.x > width + 20) p.x = -20;
+      for (const p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
 
-        const alpha = Math.sin(p.phase) * 0.2 + p.baseAlpha;
+        if (p.x < 0) p.x = width;
+        if (p.x > width) p.x = 0;
+        if (p.y < 0) p.y = height;
+        if (p.y > height) p.y = 0;
 
-        ctx.save();
+        ctx.globalAlpha = p.alpha;
+        ctx.fillStyle = coolColor;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = p.color;
-        ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
-        ctx.shadowColor = '#D6B47A';
-        ctx.shadowBlur = 8;
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
         ctx.fill();
-        ctx.restore();
-      }
-
-      // 2. Gold Orbital Energy Ring around Portrait on Desktop
-      if (width >= 1024) {
-        const centerX = width * 0.68 + mx * 8;
-        const centerY = height * 0.48 + my * 6;
-        const radiusX = 260;
-        const radiusY = 90;
-        const tiltAngle = -0.28;
-
-        ctx.save();
-        ctx.translate(centerX, centerY);
-        ctx.rotate(tiltAngle);
-
-        // Faint ring stroke
-        ctx.beginPath();
-        ctx.ellipse(0, 0, radiusX, radiusY, 0, 0, Math.PI * 2);
-        ctx.strokeStyle = 'rgba(214, 180, 122, 0.18)';
-        ctx.lineWidth = 1.2;
-        ctx.stroke();
-
-        for (let i = 0; i < orbitParticles.length; i++) {
-          const op = orbitParticles[i];
-          op.angle += op.speed;
-
-          const rx = radiusX + op.radiusOffset;
-          const ry = radiusY + op.verticalOffset;
-          const px = Math.cos(op.angle) * rx;
-          const py = Math.sin(op.angle) * ry;
-
-          const isFront = Math.sin(op.angle) > 0;
-          const zFactor = isFront ? 1.15 : 0.65;
-          const alpha = (Math.sin(time * 3 + i) * 0.2 + op.brightness) * (isFront ? 0.85 : 0.3);
-
-          ctx.beginPath();
-          ctx.arc(px, py, op.size * zFactor, 0, Math.PI * 2);
-          ctx.fillStyle = op.color;
-          ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
-          ctx.shadowColor = '#D6B47A';
-          ctx.shadowBlur = 10 * zFactor;
-          ctx.fill();
-        }
-        ctx.restore();
       }
 
       animId = requestAnimationFrame(render);
@@ -158,204 +77,257 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate }) => {
     render();
 
     return () => {
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('resize', resize);
       cancelAnimationFrame(animId);
     };
   }, []);
 
-  const socialLinks = useMemo(() => [
-    { name: 'LinkedIn', icon: <Linkedin className="w-4 h-4" />, href: PORTFOLIO_PROFILE.socials.linkedin },
-    { name: 'GitHub', icon: <Github className="w-4 h-4" />, href: PORTFOLIO_PROFILE.socials.github },
-    { name: 'Instagram', icon: <Instagram className="w-4 h-4" />, href: PORTFOLIO_PROFILE.socials.instagram },
-    { name: 'WhatsApp', icon: <MessageCircle className="w-4 h-4" />, href: PORTFOLIO_PROFILE.socials.whatsapp },
-    { name: 'Email', icon: <Mail className="w-4 h-4" />, href: PORTFOLIO_PROFILE.socials.email },
-  ], []);
+  // 3D mouse tilt interaction
+  useEffect(() => {
+    const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (isReducedMotion) return;
+
+    const onMouseMove = (e: MouseEvent) => {
+      if (!stageWrapRef.current || !stageRef.current) return;
+      const rect = stageWrapRef.current.getBoundingClientRect();
+      const dx = (e.clientX - (rect.left + rect.width / 2)) / window.innerWidth;
+      const dy = (e.clientY - (rect.top + rect.height / 2)) / window.innerHeight;
+      stageRef.current.style.transform = `rotateY(${dx * 12}deg) rotateX(${-dy * 10}deg)`;
+    };
+
+    window.addEventListener('mousemove', onMouseMove, { passive: true });
+    return () => window.removeEventListener('mousemove', onMouseMove);
+  }, []);
 
   return (
     <section
-      ref={containerRef}
-      id="hero"
-      className="relative min-h-screen w-full flex items-center justify-between px-6 sm:px-12 md:px-16 pt-24 pb-16 overflow-hidden select-none bg-[#0B0A0A]"
+      id="home"
+      className="min-h-screen relative flex items-center pt-[calc(72px+30px)] pb-20 overflow-hidden bg-[var(--bg)]"
     >
-      {/* Background Deep Wine & Burgundy Luxury Gradients */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute top-1/4 right-1/4 w-[600px] h-[600px] rounded-full bg-gradient-to-br from-[#6E2634]/30 via-[#241517]/20 to-transparent blur-3xl" />
-        <div className="absolute bottom-10 left-10 w-[450px] h-[450px] rounded-full bg-gradient-to-tr from-[#120D0E] via-[#241517]/30 to-transparent blur-2xl" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(214,180,122,0.03)_0%,transparent_70%)]" />
-      </div>
+      {/* Particle Canvas Background */}
+      <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none w-full h-full" />
 
-      {/* Gold & Champagne Particle Canvas */}
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 z-2 pointer-events-none"
-      />
+      {/* Ambient Orange Radial Glow */}
+      <div className="absolute -top-[15%] -right-[10%] w-[56vw] h-[56vw] max-w-[850px] max-h-[850px] rounded-full bg-[radial-gradient(circle,rgba(255,122,41,0.08)_0%,transparent_65%)] pointer-events-none filter blur-2xl" />
 
-      {/* Left Vertical Social Dock */}
-      <div className="hidden lg:flex fixed left-6 sm:left-10 top-1/2 -translate-y-1/2 z-40 flex-col items-center gap-5">
-        <div className="w-[1px] h-12 bg-[#D6B47A]/30" />
-        {socialLinks.map((item) => (
-          <a
-            key={item.name}
-            href={item.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            onMouseEnter={() => cyberAudio.playKeyClick()}
-            className="text-white/60 hover:text-[#D6B47A] hover:scale-110 transition-all duration-300 cursor-pointer"
-            title={item.name}
-          >
-            {item.icon}
-          </a>
-        ))}
-        <div className="w-[1px] h-12 bg-[#D6B47A]/30" />
-      </div>
-
-      {/* Main Content Grid */}
-      <div className="relative z-10 w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center min-h-[80vh]">
-        
-        {/* Left Column: Oversized Editorial Typography */}
-        <div
-          className="lg:col-span-7 flex flex-col items-start justify-center space-y-4 pt-4 sm:pt-0 will-change-transform transition-transform duration-300 ease-out"
-          style={{
-            transform: `translate3d(${mousePos.current.x * 4}px, ${mousePos.current.y * 3}px, 0)`,
-          }}
-        >
-          {/* Main Giant Name Typography matching uploaded design */}
-          <div className="space-y-0 tracking-tight leading-none overflow-hidden select-none">
-            <h1
-              className={`font-display font-black text-6xl sm:text-7xl md:text-8xl lg:text-[100px] text-white tracking-tight leading-[0.95] transition-all duration-700 ease-out ${
-                isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
-              }`}
-            >
-              SATHYA
-            </h1>
-            <h1
-              className={`font-display font-black text-6xl sm:text-7xl md:text-8xl lg:text-[100px] text-white tracking-tight leading-[0.95] transition-all duration-700 delay-100 ease-out ${
-                isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
-              }`}
-            >
-              SAI
-            </h1>
-            <h1
-              className={`font-display font-black text-6xl sm:text-7xl md:text-8xl lg:text-[100px] text-[#D6B47A] tracking-tight leading-[0.95] drop-shadow-[0_0_35px_rgba(214,180,122,0.3)] transition-all duration-700 delay-200 ease-out ${
-                isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
-              }`}
-            >
-              JS
-            </h1>
-          </div>
-
-          {/* Three Professional Roles */}
-          <div
-            className={`space-y-1 font-mono text-xs sm:text-sm text-white/90 tracking-[0.2em] uppercase font-semibold transition-all duration-700 delay-300 ease-out ${
-              isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-            }`}
-          >
-            <div>CYBER SECURITY ENGINEER</div>
-            <div>SOFTWARE DEVELOPER</div>
-            <div>DATA ANALYST</div>
-          </div>
-
-          {/* Subtitle Statement */}
-          <p
-            className={`text-white/70 text-sm sm:text-base max-w-lg leading-relaxed pt-1 transition-all duration-700 delay-400 ease-out ${
-              isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-            }`}
-          >
-            I build secure systems, intelligent applications and data-driven digital experiences.
-          </p>
-
-          {/* CTAs matching uploaded layout */}
-          <div
-            className={`flex flex-wrap items-center gap-4 pt-3 transition-all duration-700 delay-500 ease-out ${
-              isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-            }`}
-          >
-            {/* Primary Filled Burgundy CTA */}
-            <button
-              onClick={() => {
-                cyberAudio.playScannerGliss();
-                onNavigate('work');
-              }}
-              className="px-7 py-3 bg-[#6E2634] hover:bg-[#8C2735] text-white font-mono text-xs font-bold tracking-widest uppercase transition-all duration-300 flex items-center gap-3 cursor-pointer shadow-[0_0_20px_rgba(110,38,52,0.5)] hover:shadow-[0_0_30px_rgba(110,38,52,0.8)] hover:-translate-y-0.5"
-            >
-              <span>EXPLORE MY WORK</span>
-              <ArrowRight className="w-4 h-4 text-[#D6B47A]" />
-            </button>
-
-            {/* Secondary Gold Outline CTA */}
-            <button
-              onClick={() => {
-                cyberAudio.playKeyClick();
-                onNavigate('contact');
-              }}
-              className="px-7 py-3 border border-[#D6B47A]/60 hover:border-[#D6B47A] bg-transparent hover:bg-[#D6B47A]/10 text-[#D6B47A] font-mono text-xs font-bold tracking-widest uppercase transition-all duration-300 cursor-pointer hover:-translate-y-0.5"
-            >
-              LET'S CONNECT
-            </button>
-          </div>
-
-          {/* Bottom Scroll Down Indicator */}
-          <div
-            className={`pt-8 flex items-center gap-3 text-white/50 font-mono text-[10px] sm:text-xs tracking-widest transition-all duration-700 delay-600 ease-out ${
-              isLoaded ? 'opacity-100' : 'opacity-0'
-            }`}
-          >
-            <div className="w-5 h-9 rounded-full border border-[#D6B47A]/40 flex items-start justify-center p-1">
-              <span className="w-1 h-2 rounded-full bg-[#D6B47A] animate-bounce" />
+      <div className="w-full max-w-[1300px] mx-auto px-5 sm:px-8 md:px-12 relative z-10">
+        <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12 w-full">
+          
+          {/* Left Column: Typography & Content */}
+          <div className="flex-1 w-full min-w-0">
+            {/* Greeting */}
+            <div className="flex items-center gap-3.5 mb-6">
+              <span className="w-11 h-[1px] bg-[#ff7a29] inline-block" />
+              <span className="font-mono-code text-[0.72rem] tracking-[0.2em] uppercase text-[var(--mut)]">
+                Hello, I&apos;m
+              </span>
             </div>
-            <span
-              onClick={() => onNavigate('about')}
-              className="hover:text-[#D6B47A] transition-colors cursor-pointer"
-            >
-              SCROLL DOWN
-            </span>
-          </div>
 
-        </div>
+            {/* Display Name */}
+            <h1 className="font-disp font-bold text-4xl sm:text-6xl md:text-7xl lg:text-[5.4rem] leading-[1.02] tracking-tight uppercase text-[var(--txt)]">
+              <span className="block">{portfolioData.firstName}</span>
+              <span className="block text-[#ff7a29]">{portfolioData.lastName}</span>
+            </h1>
 
-        {/* Right Column: Tailored Portrait + 3D Security Sculpture & Metric Stats */}
-        <div
-          className={`lg:col-span-5 relative flex items-center justify-center transition-all duration-1000 delay-300 ease-out ${
-            isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
-          }`}
-          style={{
-            transform: `translate3d(${mousePos.current.x * -6}px, ${mousePos.current.y * -4}px, 0)`,
-          }}
-        >
-          {/* Main Portrait Frame with Soft Luxury Glow using ProfileImage component */}
-          <ProfileImage
-            variant="hero"
-            src={PORTFOLIO_PROFILE.images.heroPortrait}
-            alt="SATHYA SAI JS - Cyber Security Engineer"
-          />
+            {/* Roles Bar */}
+            <div className="mt-6 flex flex-wrap items-center gap-2 font-mono-code text-xs sm:text-sm tracking-[0.14em] uppercase text-[var(--txt)]">
+              <span className="text-[var(--txt)]">{portfolioData.rolePrimary}</span>
+              <span className="text-[#ff7a29]">/</span>
+              <span className="text-[var(--mut)]">{portfolioData.roleSecondary}</span>
+              <span className="text-[#ff7a29]">/</span>
+              <span className="text-[var(--dim)]">{portfolioData.roleExtra}</span>
+            </div>
 
-          {/* Metric Stats Cards floating on the right */}
-          <div className="absolute -right-4 sm:-right-8 top-1/4 space-y-4 pointer-events-none">
-            {PORTFOLIO_PROFILE.stats.map((stat, idx) => (
-              <div
-                key={stat.label}
-                className="bg-[#120D0E]/90 backdrop-blur-md border border-[#D6B47A]/30 px-4 py-2.5 rounded-xl shadow-[0_10px_25px_rgba(0,0,0,0.6)] flex flex-col items-start animate-fade-in"
-                style={{ animationDelay: `${idx * 200 + 500}ms` }}
+            {/* Introduction Paragraph */}
+            <p className="mt-5 max-w-[50ch] text-[var(--mut)] text-base sm:text-lg leading-relaxed">
+              {portfolioData.intro}
+            </p>
+
+            {/* Action Buttons */}
+            <div className="flex flex-wrap gap-4 mt-8">
+              <a
+                href="#projects"
+                className="inline-flex items-center gap-3 font-mono-code text-xs tracking-[0.18em] uppercase px-7 py-3.5 bg-[#ff7a29] text-[#0b0b0e] font-semibold rounded-sm border border-[#ff7a29] hover:bg-[var(--txt)] hover:text-[#0b0b0e] hover:border-[var(--txt)] transition-all duration-300 shadow-[0_10px_25px_-8px_rgba(255,122,41,0.5)] group"
               >
-                <span className="font-display font-black text-2xl text-[#D6B47A] leading-tight">
-                  {stat.value}
-                </span>
-                <span className="font-mono text-[9px] text-white/70 tracking-wider uppercase font-semibold">
-                  {stat.label}
-                </span>
-              </div>
-            ))}
+                <span>View My Work</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+              </a>
+
+              <button
+                onClick={onOpenResume}
+                className="inline-flex items-center gap-3 font-mono-code text-xs tracking-[0.18em] uppercase px-7 py-3.5 border border-[var(--line2)] text-[var(--txt)] rounded-sm hover:border-[#ff7a29] hover:text-[#ff7a29] hover:-translate-y-0.5 transition-all duration-300 group"
+              >
+                <span>Download Resume</span>
+                <Download className="w-4 h-4 group-hover:translate-y-0.5 transition-transform duration-300" />
+              </button>
+            </div>
+
+            {/* Social Icons List */}
+            <div className="flex items-center gap-3 mt-9">
+              {portfolioData.socialLinks.map((social) => {
+                const getIcon = () => {
+                  switch (social.icon) {
+                    case 'github':
+                      return <Github className="w-4 h-4" />;
+                    case 'linkedin':
+                      return <Linkedin className="w-4 h-4" />;
+                    case 'instagram':
+                      return <Instagram className="w-4 h-4" />;
+                    case 'mail':
+                      return <Mail className="w-4 h-4" />;
+                    default:
+                      return <Github className="w-4 h-4" />;
+                  }
+                };
+
+                return (
+                  <a
+                    key={social.label}
+                    href={social.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={social.label}
+                    className="w-10 h-10 border border-[var(--line)] rounded-full flex items-center justify-center text-[var(--mut)] hover:text-[#ff7a29] hover:border-[#ff7a29] hover:-translate-y-1 hover:shadow-[0_10px_20px_-8px_rgba(255,122,41,0.4)] transition-all duration-300"
+                  >
+                    {getIcon()}
+                  </a>
+                );
+              })}
+            </div>
           </div>
 
-          {/* Floating 3D Geometric Sculpture Accent in bottom-left */}
-          <div className="absolute -left-6 bottom-8 w-20 h-20 border border-[#D6B47A]/30 rounded-xl rotate-45 backdrop-blur-sm bg-[#6E2634]/10 pointer-events-none animate-pulse-slow flex items-center justify-center">
-            <div className="w-10 h-10 border border-[#D6B47A]/50 rounded-lg -rotate-12" />
+          {/* Center Column: 3D Stage with Floating Portrait Disc */}
+          <div className="flex-1 w-full flex justify-center py-6 lg:py-0">
+            <div ref={stageWrapRef} className="relative w-full max-w-[420px] aspect-square [perspective:1100px]">
+              <div
+                ref={stageRef}
+                className="w-full h-full relative [transform-style:preserve-3d] transition-transform duration-200 ease-out"
+              >
+                {/* SVG Orbital Rings */}
+                <svg className="absolute -inset-[5%] w-[110%] h-[110%] overflow-visible pointer-events-none" viewBox="0 0 600 600" aria-hidden="true">
+                  <defs>
+                    <linearGradient id="gOrb" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0" stopColor="transparent" />
+                      <stop offset="0.6" stopColor="var(--cool)" />
+                      <stop offset="1" stopColor="transparent" />
+                    </linearGradient>
+                  </defs>
+
+                  {/* Outer Cool Orbital Ring */}
+                  <g className="animate-spin-c">
+                    <ellipse cx="300" cy="300" rx="275" ry="105" fill="none" stroke="url(#gOrb)" strokeWidth="0.9" />
+                    <circle cx="575" cy="300" r="3.5" fill="var(--cool)" opacity="0.9" />
+                  </g>
+
+                  {/* Mid Tilted Amber Orbital Ring */}
+                  <g className="animate-spin-b">
+                    <ellipse cx="300" cy="300" rx="260" ry="90" fill="none" stroke="var(--line2)" strokeWidth="0.9" />
+                    <circle cx="560" cy="300" r="3.5" fill="#ff7a29" />
+                  </g>
+
+                  {/* Inner Dashed Amber Ring */}
+                  <g className="animate-spin-a">
+                    <ellipse cx="300" cy="300" rx="245" ry="120" fill="none" stroke="rgba(255,122,41,0.22)" strokeWidth="1.2" strokeDasharray="4 8" />
+                  </g>
+                </svg>
+
+                {/* Floating Glow Satellites */}
+                <span className="absolute top-[6%] left-[12%] w-1.5 h-1.5 rounded-full bg-[#ff7a29] shadow-[0_0_10px_#ff7a29] animate-floaty" />
+                <span className="absolute bottom-[10%] right-[10%] w-1.5 h-1.5 rounded-full bg-[var(--cool)] shadow-[0_0_8px_var(--cool)] animate-floaty [animation-delay:1.4s]" />
+                <span className="absolute top-[24%] right-[18%] w-1.5 h-1.5 rounded-full bg-[#ff7a29] animate-floaty [animation-delay:2.2s]" />
+
+                {/* Wireframe Corner Accents */}
+                <div className="absolute top-0 left-0 w-6 h-6 border-t border-l border-[var(--line2)] pointer-events-none" />
+                <div className="absolute bottom-0 right-0 w-6 h-6 border-b border-r border-[var(--line2)] pointer-events-none" />
+
+                {/* Disc Base Shadow Platform */}
+                <div className="absolute left-[8%] right-[8%] bottom-[2%] h-[10%] rounded-full border border-[var(--line2)] bg-[radial-gradient(ellipse_at_center,rgba(255,122,41,0.12),transparent_70%)] pointer-events-none" />
+
+                {/* Central Floating Portrait Disc */}
+                <div className="absolute left-1/2 top-[47%] w-[58%] aspect-square -translate-x-1/2 -translate-y-1/2 [transform:translate(-50%,-50%)_translateZ(40px)] rounded-full bg-[radial-gradient(circle_at_32%_28%,#22222b,#101015_58%,#0b0b0f)] shadow-[0_0_0_1px_var(--line2),0_0_80px_-15px_rgba(255,122,41,0.4),inset_0_0_60px_rgba(0,0,0,0.8)] flex items-center justify-center overflow-hidden">
+                  
+                  {/* Subtle Scanning Laser */}
+                  <div className="absolute left-0 right-0 h-[34%] bg-[linear-gradient(to_bottom,transparent,rgba(159,198,232,0.15),transparent)] animate-scan pointer-events-none" />
+
+                  {/* Dashed Border Inner Ring */}
+                  <div className="absolute inset-3 border border-dashed border-[var(--line2)] rounded-full pointer-events-none" />
+
+                  {/* Profile Portrait Image */}
+                  <img
+                    src={portfolioData.photo}
+                    alt={portfolioData.fullName}
+                    className="w-full h-full object-cover rounded-full"
+                    onError={(e) => {
+                      // Fallback if image fails to load
+                      const target = e.currentTarget;
+                      target.style.display = 'none';
+                    }}
+                  />
+
+                  {/* Fallback Text if photo not loaded */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center pointer-events-none font-mono-code text-[0.68rem] tracking-widest text-[var(--dim)] opacity-0 hover:opacity-100 transition-opacity">
+                    <b className="text-[#ff7a29] font-medium block text-xs">{portfolioData.logoInitials}</b>
+                    <span>CORE IDENTITY</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
+
+          {/* Right Column: Numbered Side Rail */}
+          <aside className="w-full lg:w-[220px] flex flex-row lg:flex-col gap-0 border-t lg:border-t-0 lg:border-l border-[var(--line)] pt-4 lg:pt-0 overflow-x-auto">
+            {railItems.map((item, idx) => {
+              const isActive = activeRailIndex === idx;
+              return (
+                <button
+                  key={item.num}
+                  onClick={() => setActiveRailIndex(idx)}
+                  onMouseEnter={() => setActiveRailIndex(idx)}
+                  className={`relative text-left p-4 lg:p-5 lg:pl-6 border-l lg:border-l-0 border-[var(--line)] min-w-[160px] lg:min-w-0 transition-all duration-300 ${
+                    isActive ? 'lg:pl-8 bg-[var(--panel)]/40' : ''
+                  }`}
+                >
+                  {/* Amber Active Bar Indicator */}
+                  <span
+                    className={`absolute left-0 top-0 bottom-0 w-[2px] bg-[#ff7a29] transition-transform duration-300 origin-top ${
+                      isActive ? 'scale-y-100' : 'scale-y-0'
+                    }`}
+                  />
+                  
+                  <span className="block font-mono-code text-[0.68rem] text-[#ff7a29] tracking-[0.2em]">
+                    {item.num}
+                  </span>
+                  
+                  <span
+                    className={`block font-disp font-semibold text-sm lg:text-base tracking-wider uppercase my-1 transition-colors duration-300 ${
+                      isActive ? 'text-[var(--txt)]' : 'text-[var(--mut)] hover:text-[var(--txt)]'
+                    }`}
+                  >
+                    {item.title}
+                  </span>
+
+                  <span
+                    className={`block text-[0.76rem] text-[var(--dim)] leading-relaxed transition-all duration-300 ${
+                      isActive ? 'max-h-24 opacity-100 mt-2' : 'max-h-0 opacity-0 overflow-hidden'
+                    }`}
+                  >
+                    {item.desc}
+                  </span>
+                </button>
+              );
+            })}
+          </aside>
 
         </div>
-
       </div>
 
+      {/* Bottom Scroll Cue */}
+      <div className="absolute left-5 sm:left-8 md:left-12 bottom-6 flex items-center gap-3 font-mono-code text-[0.65rem] tracking-[0.25em] text-[var(--dim)] pointer-events-none">
+        <i className="w-11 h-[1px] bg-[var(--line)] relative overflow-hidden block">
+          <span className="absolute inset-0 bg-[#ff7a29] animate-sweep" />
+        </i>
+        <span>SCROLL TO EXPLORE</span>
+      </div>
     </section>
   );
 };

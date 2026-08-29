@@ -1,196 +1,204 @@
 import React, { useState } from 'react';
-import { SELECTED_PROJECTS, ProjectCaseStudy } from '../data/portfolioData';
-import { ArrowRight, ChevronLeft, ChevronRight, ExternalLink, Github, Sparkles } from 'lucide-react';
-import { cyberAudio } from '../utils/soundEngine';
+import { ExternalLink, Github, ArrowRight, Layers } from 'lucide-react';
+import { portfolioData } from '../data/portfolioData';
+import { ProjectCaseStudy } from '../types';
 
 interface ProjectsSectionProps {
-  onSelectProject: (project: ProjectCaseStudy) => void;
+  onOpenCaseStudy: (project: ProjectCaseStudy) => void;
 }
 
-export const ProjectsSection: React.FC<ProjectsSectionProps> = ({ onSelectProject }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
+export const ProjectsSection: React.FC<ProjectsSectionProps> = ({ onOpenCaseStudy }) => {
+  const [selectedIdx, setSelectedIdx] = useState(0);
+  const [isSwapping, setIsSwapping] = useState(false);
 
-  const activeProject = SELECTED_PROJECTS[currentIndex];
-  const nextProject = SELECTED_PROJECTS[(currentIndex + 1) % SELECTED_PROJECTS.length];
+  const currentProject = portfolioData.projects[selectedIdx] || portfolioData.projects[0];
 
-  const handleNext = () => {
-    cyberAudio.playKeyClick();
-    setCurrentIndex((prev) => (prev + 1) % SELECTED_PROJECTS.length);
-  };
-
-  const handlePrev = () => {
-    cyberAudio.playKeyClick();
-    setCurrentIndex((prev) => (prev - 1 + SELECTED_PROJECTS.length) % SELECTED_PROJECTS.length);
+  const handleSelectProject = (index: number) => {
+    if (index === selectedIdx || isSwapping) return;
+    setIsSwapping(true);
+    setTimeout(() => {
+      setSelectedIdx(index);
+      setIsSwapping(false);
+    }, 280);
   };
 
   return (
-    <section id="work" className="relative w-full bg-[#F9F6F0] text-[#120D0E] py-20 lg:py-28 px-6 sm:px-12 select-none overflow-hidden border-t border-[#D6B47A]/15">
-      
-      <div className="max-w-7xl mx-auto space-y-12">
-        
-        {/* Section Heading */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-          <div className="space-y-1">
-            <h2 className="font-display font-black text-4xl sm:text-5xl text-[#120D0E] tracking-tight">
-              SELECTED WORK
-            </h2>
-            <p className="font-mono text-xs text-[#6E2634] tracking-widest uppercase font-bold">
-              PRODUCTION ARCHITECTURES · DATA PLATFORMS · CRYPTOGRAPHIC SYSTEMS
-            </p>
-          </div>
+    <section id="projects" className="py-24 sm:py-32 relative bg-[var(--bg)] border-t border-[var(--line)]">
+      <div className="w-full max-w-[1300px] mx-auto px-5 sm:px-8 md:px-12">
+        {/* Section Header */}
+        <div className="flex items-baseline gap-4 mb-16 sm:mb-20">
+          <span className="font-mono-code text-[0.72rem] text-[#ff7a29] tracking-[0.2em]">/ 03</span>
+          <h2 className="font-disp font-bold text-2xl sm:text-3xl md:text-4xl uppercase tracking-tight text-[var(--txt)]">
+            Featured Projects
+          </h2>
+          <span className="flex-1 h-[1px] bg-[var(--line)] self-center" />
+          <span className="hidden sm:inline-block font-mono-code text-[0.72rem] text-[var(--dim)] tracking-[0.2em]">
+            SELECTED WORK
+          </span>
+        </div>
+
+        {/* Showcase Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_0.9fr] gap-8 lg:gap-14 items-start">
           
-          <div className="hidden sm:flex items-center gap-2">
-            <button
-              onClick={handlePrev}
-              className="p-2.5 rounded-full border border-[#120D0E]/20 hover:border-[#6E2634] hover:bg-[#6E2634] hover:text-white transition-all cursor-pointer"
-              aria-label="Previous Project"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <button
-              onClick={handleNext}
-              className="p-2.5 rounded-full border border-[#120D0E]/20 hover:border-[#6E2634] hover:bg-[#6E2634] hover:text-white transition-all cursor-pointer"
-              aria-label="Next Project"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
+          {/* Project Preview Viewport */}
+          <div
+            className={`transition-all duration-300 ease-out ${
+              isSwapping ? 'opacity-0 -translate-x-4' : 'opacity-100 translate-x-0'
+            }`}
+          >
+            <div className="relative aspect-[16/10] border border-[var(--line)] bg-[var(--panel)] overflow-hidden flex items-center justify-center group shadow-2xl">
+              {/* Background Grid Pattern */}
+              <div
+                className="absolute inset-0 opacity-40 pointer-events-none"
+                style={{
+                  backgroundImage:
+                    'linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px)',
+                  backgroundSize: '40px 40px',
+                }}
+              />
+
+              {/* Radial Amber Glow */}
+              <div className="absolute -top-[20%] -left-[10%] w-[60%] aspect-square rounded-full bg-[radial-gradient(circle,rgba(255,122,41,0.18)_0%,transparent_70%)] filter blur-xl pointer-events-none" />
+
+              {/* Project Image */}
+              <img
+                src={currentProject.image}
+                alt={currentProject.name}
+                className="w-full h-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,0.8,0.24,1)] group-hover:scale-105 relative z-1"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+
+              {/* Number Overlay Badge */}
+              <div className="absolute top-4 right-4 bg-[var(--bg)]/90 backdrop-blur border border-[var(--line2)] px-3 py-1 font-mono-code text-xs tracking-widest text-[#ff7a29] z-10">
+                0{selectedIdx + 1} / 0{portfolioData.projects.length}
+              </div>
+            </div>
+          </div>
+
+          {/* Project Details */}
+          <div
+            className={`transition-all duration-300 ease-out ${
+              isSwapping ? 'opacity-0 translate-x-4' : 'opacity-100 translate-x-0'
+            }`}
+          >
+            {/* Category Tag */}
+            <span className="inline-block border border-[var(--line2)] px-3.5 py-1.5 font-mono-code text-[0.66rem] tracking-[0.2em] uppercase text-[#ff7a29] mb-5">
+              {currentProject.category}
+            </span>
+
+            {/* Title */}
+            <h3 className="font-disp font-bold text-2xl sm:text-3xl lg:text-4xl uppercase tracking-tight leading-tight text-[var(--txt)] mb-4">
+              {currentProject.name}
+            </h3>
+
+            {/* Description */}
+            <p className="text-[var(--mut)] text-sm sm:text-base leading-relaxed max-w-[48ch] mb-8">
+              {currentProject.description || currentProject.desc}
+            </p>
+
+            {/* Actions */}
+            <div className="flex flex-wrap items-center gap-3">
+              {currentProject.liveUrl && (
+                <a
+                  href={currentProject.liveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 font-mono-code text-xs tracking-[0.16em] uppercase px-5 py-3 bg-[#ff7a29] text-[#0b0b0e] font-semibold rounded-sm hover:bg-[var(--txt)] transition-colors duration-300"
+                >
+                  <span>Live Demo</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              )}
+
+              {currentProject.githubUrl && (
+                <a
+                  href={currentProject.githubUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 font-mono-code text-xs tracking-[0.16em] uppercase px-5 py-3 border border-[var(--line2)] text-[var(--txt)] rounded-sm hover:border-[#ff7a29] hover:text-[#ff7a29] transition-all duration-300"
+                >
+                  <span>View Code</span>
+                  <Github className="w-3.5 h-3.5" />
+                </a>
+              )}
+
+              <button
+                onClick={() => onOpenCaseStudy(currentProject)}
+                className="inline-flex items-center gap-2 font-mono-code text-xs tracking-[0.16em] uppercase px-5 py-3 border border-[var(--line2)] text-[var(--txt)] rounded-sm hover:border-[#ff7a29] hover:text-[#ff7a29] transition-all duration-300"
+              >
+                <span>Case Study</span>
+                <Layers className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            {/* Tech Chips */}
+            <div className="flex flex-wrap gap-2 pt-6 mt-8 border-t border-[var(--line)]">
+              {(currentProject.tech || currentProject.tags || []).map((t) => (
+                <span
+                  key={t}
+                  className="inline-flex items-center gap-2 font-mono-code text-[0.66rem] tracking-wider border border-[var(--line)] px-3 py-1.5 text-[var(--mut)] hover:text-[var(--txt)] hover:border-[#ff7a29] transition-colors"
+                >
+                  <i className="w-1.5 h-1.5 rounded-full bg-[#ff7a29] inline-block" />
+                  <span>{t}</span>
+                </span>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Project Showcase Layout matching uploaded master image */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          
-          {/* Left: Project Number Navigation Index */}
-          <div className="lg:col-span-2 flex lg:flex-col items-center lg:items-start gap-4 sm:gap-6">
-            {SELECTED_PROJECTS.map((proj, idx) => {
-              const isActive = currentIndex === idx;
-              return (
-                <button
-                  key={proj.id}
-                  onClick={() => {
-                    cyberAudio.playKeyClick();
-                    setCurrentIndex(idx);
-                  }}
-                  className={`font-display font-black text-3xl sm:text-4xl transition-all duration-300 cursor-pointer ${
-                    isActive
-                      ? 'text-[#6E2634] scale-110'
-                      : 'text-[#120D0E]/25 hover:text-[#120D0E]/60'
+        {/* Bottom Interactive Navigation List */}
+        <div className="mt-14 sm:mt-20 border-t border-[var(--line)]">
+          {portfolioData.projects.map((project, idx) => {
+            const isSelected = selectedIdx === idx;
+            return (
+              <button
+                key={project.id || project.name}
+                onClick={() => handleSelectProject(idx)}
+                className={`w-full grid grid-cols-[40px_1fr_auto] items-center gap-4 py-5 px-3 border-b border-[var(--line)] text-left transition-all duration-300 relative group ${
+                  isSelected ? 'bg-[var(--panel)] pl-6' : 'hover:bg-[var(--panel)]/50 hover:pl-6'
+                }`}
+              >
+                {/* Active Left Indicator Bar */}
+                <span
+                  className={`absolute left-0 top-0 bottom-0 w-[2px] bg-[#ff7a29] transition-transform duration-300 ${
+                    isSelected ? 'scale-y-100' : 'scale-y-0 group-hover:scale-y-100'
+                  }`}
+                />
+
+                {/* Index Number */}
+                <span
+                  className={`font-mono-code text-xs tracking-widest ${
+                    isSelected ? 'text-[#ff7a29]' : 'text-[var(--dim)] group-hover:text-[#ff7a29]'
                   }`}
                 >
-                  {proj.num}
-                </button>
-              );
-            })}
+                  0{idx + 1}
+                </span>
 
-            {/* Mobile Prev / Next Buttons */}
-            <div className="flex sm:hidden items-center gap-2 ml-auto">
-              <button
-                onClick={handlePrev}
-                className="p-2 rounded-full border border-[#120D0E]/20 hover:bg-[#6E2634] hover:text-white"
-              >
-                <ChevronLeft className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={handleNext}
-                className="p-2 rounded-full border border-[#120D0E]/20 hover:bg-[#6E2634] hover:text-white"
-              >
-                <ChevronRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
+                {/* Project Title */}
+                <span
+                  className={`font-disp font-semibold text-base sm:text-lg uppercase tracking-wide transition-colors ${
+                    isSelected ? 'text-[var(--txt)]' : 'text-[var(--mut)] group-hover:text-[var(--txt)]'
+                  }`}
+                >
+                  {project.name}
+                </span>
 
-          {/* Center Main Feature Card (Curved Dark UI Card) */}
-          <div className="lg:col-span-7 relative group">
-            <div
-              onClick={() => onSelectProject(activeProject)}
-              className="relative rounded-3xl bg-[#120D0E] text-white p-6 sm:p-8 border border-[#D6B47A]/30 overflow-hidden shadow-[0_20px_50px_rgba(18,13,14,0.3)] hover:shadow-[0_25px_60px_rgba(110,38,52,0.4)] transition-all duration-500 cursor-pointer"
-            >
-              
-              {/* Project Preview Image with Aspect Ratio */}
-              <div className="relative w-full aspect-video rounded-2xl overflow-hidden mb-6 border border-white/10 group-hover:border-[#D6B47A]/50 transition-colors">
-                <img
-                  src={activeProject.image}
-                  alt={activeProject.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                {/* Arrow Icon */}
+                <ArrowRight
+                  className={`w-4 h-4 transition-all duration-300 ${
+                    isSelected
+                      ? 'text-[#ff7a29] opacity-100 translate-x-0'
+                      : 'text-[var(--dim)] opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:text-[#ff7a29]'
+                  }`}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#120D0E] via-transparent to-transparent opacity-80" />
-
-                {/* Floating Category Badges */}
-                <div className="absolute top-4 left-4 flex flex-wrap gap-2">
-                  {(Array.isArray(activeProject.category) ? activeProject.category : [activeProject.category]).map((tag) => (
-                    <span
-                      key={tag}
-                      className="px-2.5 py-1 rounded-md bg-[#120D0E]/85 backdrop-blur-md border border-[#D6B47A]/30 font-mono text-[9px] font-bold text-[#D6B47A] tracking-wider"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Title & Description */}
-              <div className="space-y-3">
-                <h3 className="font-display font-black text-xl sm:text-2xl text-white group-hover:text-[#D6B47A] transition-colors leading-tight">
-                  {activeProject.title}
-                </h3>
-                
-                <p className="text-xs sm:text-sm text-white/70 leading-relaxed line-clamp-2">
-                  {activeProject.description}
-                </p>
-
-                {/* Bottom Action Strip */}
-                <div className="flex items-center justify-between pt-4 border-t border-white/10">
-                  <span className="font-mono text-xs text-[#D6B47A] font-semibold tracking-wider flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    EXPLORE CASE STUDY
-                  </span>
-
-                  <div className="w-10 h-10 rounded-full bg-[#6E2634] group-hover:bg-[#8C2735] text-white flex items-center justify-center transition-all group-hover:scale-110 shadow-[0_0_15px_rgba(110,38,52,0.6)]">
-                    <ArrowRight className="w-4 h-4 text-[#D6B47A]" />
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-          {/* Right Peeking Next Card */}
-          <div className="hidden lg:block lg:col-span-3">
-            <div
-              onClick={handleNext}
-              className="relative rounded-3xl bg-[#241517]/40 backdrop-blur-sm border border-[#D6B47A]/20 p-5 overflow-hidden opacity-70 hover:opacity-100 transition-all duration-300 cursor-pointer group"
-            >
-              <div className="font-mono text-[10px] text-[#D6B47A] tracking-widest uppercase mb-2">
-                NEXT UP // {nextProject.num}
-              </div>
-              <div className="aspect-video rounded-xl overflow-hidden mb-3 border border-white/10">
-                <img
-                  src={nextProject.image}
-                  alt={nextProject.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                />
-              </div>
-              <h4 className="font-display font-bold text-sm text-[#120D0E] line-clamp-2">
-                {nextProject.title}
-              </h4>
-            </div>
-          </div>
-
-        </div>
-
-        {/* Bottom Centered Action */}
-        <div className="flex justify-center pt-6">
-          <button
-            onClick={() => onSelectProject(activeProject)}
-            className="px-8 py-3 rounded-full bg-[#120D0E] hover:bg-[#6E2634] text-white font-mono text-xs font-bold tracking-widest uppercase transition-all duration-300 shadow-md cursor-pointer flex items-center gap-3"
-          >
-            <span>VIEW ALL PROJECTS</span>
-            <ArrowRight className="w-3.5 h-3.5 text-[#D6B47A]" />
-          </button>
+              </button>
+            );
+          })}
         </div>
 
       </div>
-
     </section>
   );
 };

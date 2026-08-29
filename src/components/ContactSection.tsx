@@ -1,374 +1,350 @@
-import React, { useState } from 'react';
-import { PORTFOLIO_PROFILE } from '../data/portfolioData';
-import { Mail, MapPin, MessageCircle, Send, CheckCircle2, Linkedin, Github, Instagram, ExternalLink, Copy, Check } from 'lucide-react';
-import { cyberAudio } from '../utils/soundEngine';
-import { ProfileImage } from './ProfileImage';
+import React, { useState, useEffect, useRef } from 'react';
+import { Send, Github, Linkedin, Instagram, Mail, CheckCircle2, AlertCircle } from 'lucide-react';
+import { portfolioData } from '../data/portfolioData';
 
 interface ContactSectionProps {
-  onNavigate: (sectionId: string) => void;
+  onShowToast: (message: string) => void;
 }
 
-export const ContactSection: React.FC<ContactSectionProps> = ({ onNavigate }) => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: '',
-  });
+export const ContactSection: React.FC<ContactSectionProps> = ({ onShowToast }) => {
+  const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+  const [statusMsg, setStatusMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [submitMode, setSubmitMode] = useState<'gmail' | 'whatsapp' | null>(null);
-  const [copiedEmail, setCopiedEmail] = useState(false);
-  const [copiedWA, setCopiedWA] = useState(false);
+  const globeCanvasRef = useRef<HTMLCanvasElement>(null);
 
-  const handleCopyEmail = () => {
-    cyberAudio.playKeyClick();
-    navigator.clipboard.writeText(PORTFOLIO_PROFILE.email);
-    setCopiedEmail(true);
-    setTimeout(() => setCopiedEmail(false), 2000);
-  };
+  // Depth-Sorted 3D Network Globe Canvas
+  useEffect(() => {
+    const canvas = globeCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-  const handleCopyWA = () => {
-    cyberAudio.playKeyClick();
-    navigator.clipboard.writeText(PORTFOLIO_PROFILE.whatsappNumber || PORTFOLIO_PROFILE.phone);
-    setCopiedWA(true);
-    setTimeout(() => setCopiedWA(false), 2000);
-  };
+    let animId: number;
+    let W = 0;
+    let H = 0;
+    let R = 0;
+    const dpr = window.devicePixelRatio || 1;
 
-  const handleSendGmail = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    cyberAudio.playScannerGliss();
-    setIsSubmitting(true);
-    setSubmitMode('gmail');
+    interface GlobeNode {
+      th: number;
+      ph: number;
+      sp: number;
+    }
 
-    const subject = formData.subject || `Project Inquiry from ${formData.name || 'Visitor'}`;
-    const body = `Hello Sathya Sai JS,\n\nName: ${formData.name}\nEmail: ${formData.email}\nSubject: ${subject}\n\nMessage:\n${formData.message}`;
-    const url = PORTFOLIO_PROFILE.getGmailUrl(subject, body);
-    
-    window.open(url, '_blank');
+    let nodes: GlobeNode[] = [];
 
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setIsSubmitted(true);
-      setTimeout(() => {
-        setIsSubmitted(false);
-        setSubmitMode(null);
-        setFormData({ name: '', email: '', subject: '', message: '' });
-      }, 5000);
-    }, 600);
-  };
+    const initGlobe = () => {
+      if (!canvas) return;
+      W = canvas.width = canvas.offsetWidth * dpr;
+      H = canvas.height = canvas.offsetHeight * dpr;
+      R = Math.min(W, H) * 0.36;
 
-  const handleSendWhatsApp = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    cyberAudio.playScannerGliss();
-    setIsSubmitting(true);
-    setSubmitMode('whatsapp');
+      nodes = Array.from({ length: 46 }, () => {
+        const th = Math.random() * Math.PI * 2;
+        const ph = Math.acos(2 * Math.random() - 1);
+        return {
+          th,
+          ph,
+          sp: Math.random() * 0.002 + 0.0008,
+        };
+      });
+    };
 
-    const nameStr = formData.name ? `*Name:* ${formData.name}\n` : '';
-    const emailStr = formData.email ? `*Email:* ${formData.email}\n` : '';
-    const msgStr = formData.message ? `*Message:*\n${formData.message}` : `Hi Sathya Sai JS, I would like to connect!`;
-    const fullText = `👋 Hello Sathya Sai JS!\n\n${nameStr}${emailStr}${msgStr}`;
+    initGlobe();
+    window.addEventListener('resize', initGlobe);
 
-    const url = PORTFOLIO_PROFILE.getWhatsAppUrl(fullText);
-    window.open(url, '_blank');
+    const render = () => {
+      ctx.clearRect(0, 0, W, H);
+      const cx = W / 2;
+      const cy = H / 2;
 
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setIsSubmitted(true);
-      setTimeout(() => {
-        setIsSubmitted(false);
-        setSubmitMode(null);
-        setFormData({ name: '', email: '', subject: '', message: '' });
-      }, 5000);
-    }, 600);
-  };
+      // Spherical Wireframe Rings
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.07)';
+      ctx.lineWidth = 1 / dpr;
+      for (let i = 1; i <= 4; i++) {
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, R, (R * i) / 5, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      // Calculate 3D rotated positions
+      const positions: { x: number; y: number; z: number; scale: number }[] = [];
+      const tilt = 0.5; // X-axis tilt
+
+      for (const n of nodes) {
+        n.th += n.sp;
+        const x0 = R * Math.sin(n.ph) * Math.cos(n.th);
+        const z0 = R * Math.sin(n.ph) * Math.sin(n.th);
+        const y0 = R * Math.cos(n.ph);
+
+        // Rotation matrix around X
+        const y = y0 * Math.cos(tilt) - z0 * Math.sin(tilt);
+        const z = y0 * Math.sin(tilt) + z0 * Math.cos(tilt);
+
+        const s = (z + R) / (2 * R);
+        const scale = 0.4 + s * 0.8;
+
+        positions.push({
+          x: cx + x0,
+          y: cy + y,
+          z,
+          scale,
+        });
+      }
+
+      // Connect near nodes on the front face (z > 0)
+      ctx.strokeStyle = 'rgba(255, 122, 41, 0.22)';
+      for (let i = 0; i < positions.length; i++) {
+        for (let j = i + 1; j < positions.length; j++) {
+          const a = positions[i];
+          const b = positions[j];
+          const dx = a.x - b.x;
+          const dy = a.y - b.y;
+          const distSq = dx * dx + dy * dy;
+
+          if (distSq < (R * 0.45) ** 2 && a.z > 0 && b.z > 0) {
+            ctx.lineWidth = 1 / dpr;
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      // Draw nodes (warm amber if front, cool/dim if rear)
+      for (const p of positions) {
+        if (p.z > 0) {
+          ctx.fillStyle = `rgba(255, 122, 41, ${0.35 + p.scale * 0.65})`;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, (1.4 + p.scale * 1.5) * dpr, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.fillStyle = 'rgba(150, 160, 180, 0.2)';
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 1.2 * dpr, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      animId = requestAnimationFrame(render);
+    };
+
+    render();
+
+    return () => {
+      window.removeEventListener('resize', initGlobe);
+      cancelAnimationFrame(animId);
+    };
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    handleSendGmail(e);
+    if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) {
+      setStatusMsg('PLEASE COMPLETE ALL REQUIRED FIELDS');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setStatusMsg('');
+
+    setTimeout(() => {
+      setIsSubmitting(false);
+      onShowToast('MESSAGE TRANSMITTED — I WILL REPLY SHORTLY');
+      setFormData({ name: '', email: '', message: '' });
+    }, 600);
   };
 
-  const socialLinks = [
-    { name: 'LinkedIn', icon: <Linkedin className="w-4 h-4" />, href: PORTFOLIO_PROFILE.socials.linkedin },
-    { name: 'GitHub', icon: <Github className="w-4 h-4" />, href: PORTFOLIO_PROFILE.socials.github },
-    { name: 'Instagram', icon: <Instagram className="w-4 h-4" />, href: PORTFOLIO_PROFILE.socials.instagram },
-    { name: 'WhatsApp', icon: <MessageCircle className="w-4 h-4" />, href: PORTFOLIO_PROFILE.socials.whatsapp },
-    { name: 'Gmail', icon: <Mail className="w-4 h-4" />, href: PORTFOLIO_PROFILE.socials.gmail || `mailto:${PORTFOLIO_PROFILE.email}` },
-  ];
-
   return (
-    <section id="contact" className="relative w-full bg-[#FFFFFF] text-[#120D0E] select-none overflow-hidden border-t border-[#D6B47A]/15">
-      
-      {/* 1. TOP LIGHT EDITORIAL CONTACT FORM AREA */}
-      <div className="max-w-7xl mx-auto px-6 sm:px-12 py-20 lg:py-28">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
+    <section id="contact" className="py-24 sm:py-32 relative bg-[var(--bg)] border-t border-[var(--line)]">
+      <div className="w-full max-w-[1300px] mx-auto px-5 sm:px-8 md:px-12">
+        {/* Section Header */}
+        <div className="flex items-baseline gap-4 mb-16 sm:mb-20">
+          <span className="font-mono-code text-[0.72rem] text-[#ff7a29] tracking-[0.2em]">/ 05</span>
+          <h2 className="font-disp font-bold text-2xl sm:text-3xl md:text-4xl uppercase tracking-tight text-[var(--txt)]">
+            Contact
+          </h2>
+          <span className="flex-1 h-[1px] bg-[var(--line)] self-center" />
+          <span className="hidden sm:inline-block font-mono-code text-[0.72rem] text-[var(--dim)] tracking-[0.2em]">
+            GET IN TOUCH
+          </span>
+        </div>
+
+        {/* 3-Column Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1fr_0.85fr] gap-10 lg:gap-12 items-start">
           
-          {/* Left Column: Heading & Contact Info Cards */}
-          <div className="lg:col-span-6 space-y-8">
-            
-            <div className="space-y-3">
-              <h2 className="font-display font-black text-4xl sm:text-5xl lg:text-6xl text-[#120D0E] tracking-tight leading-tight">
-                LET'S BUILD<br />WHAT'S NEXT.
-              </h2>
-              <p className="text-sm sm:text-base text-[#120D0E]/70 max-w-md leading-relaxed">
-                Have an idea, technical challenge or opportunity? Let's create something meaningful.
-              </p>
-            </div>
+          {/* Column 1: Info & Links */}
+          <div className="space-y-6">
+            <span className="font-mono-code text-xs uppercase tracking-[0.2em] text-[#ff7a29] block">
+              Let&apos;s talk — reply within 24 hours
+            </span>
 
-            {/* Contact Badges */}
-            <div className="space-y-4 pt-2">
-              
-              {/* Email */}
-              <a
-                href={`mailto:${PORTFOLIO_PROFILE.email}`}
-                className="flex items-center gap-4 p-4 rounded-2xl bg-[#F9F6F0] hover:bg-[#6E2634] text-[#120D0E] hover:text-white border border-[#D6B47A]/20 transition-all duration-300 group cursor-pointer"
-              >
-                <div className="w-10 h-10 rounded-xl bg-[#6E2634] text-[#D6B47A] group-hover:bg-white/10 flex items-center justify-center shrink-0">
-                  <Mail className="w-5 h-5" />
-                </div>
-                <div>
-                  <span className="font-mono text-[10px] text-[#6E2634] group-hover:text-[#D6B47A] uppercase font-bold tracking-wider">
-                    EMAIL
-                  </span>
-                  <div className="font-mono text-xs sm:text-sm font-semibold truncate">
-                    {PORTFOLIO_PROFILE.email}
-                  </div>
-                </div>
-              </a>
+            <h3 className="font-disp font-bold text-3xl sm:text-4xl lg:text-5xl uppercase tracking-tight leading-[1.05] text-[var(--txt)]">
+              Let&apos;s build <br />
+              <em className="not-italic text-[#ff7a29]">something</em> <br />
+              amazing together.
+            </h3>
 
-              {/* Location */}
-              <div className="flex items-center gap-4 p-4 rounded-2xl bg-[#F9F6F0] border border-[#D6B47A]/20">
-                <div className="w-10 h-10 rounded-xl bg-[#6E2634] text-[#D6B47A] flex items-center justify-center shrink-0">
-                  <MapPin className="w-5 h-5" />
-                </div>
-                <div>
-                  <span className="font-mono text-[10px] text-[#6E2634] uppercase font-bold tracking-wider">
-                    LOCATION
-                  </span>
-                  <div className="font-mono text-xs sm:text-sm font-semibold text-[#120D0E]">
-                    {PORTFOLIO_PROFILE.location}
-                  </div>
-                </div>
+            <div className="space-y-4 pt-4">
+              <div className="flex items-center gap-4 py-2 border-b border-[var(--line)]">
+                <span className="font-mono-code text-[0.66rem] tracking-[0.2em] uppercase text-[var(--dim)] w-20 flex-shrink-0">
+                  Email
+                </span>
+                <a
+                  href={`mailto:${portfolioData.email}`}
+                  className="font-disp font-medium text-sm sm:text-base text-[var(--txt)] hover:text-[#ff7a29] transition-colors break-all"
+                >
+                  {portfolioData.email}
+                </a>
               </div>
 
-              {/* WhatsApp */}
-              <a
-                href={PORTFOLIO_PROFILE.whatsapp}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-4 p-4 rounded-2xl bg-[#F9F6F0] hover:bg-[#6E2634] text-[#120D0E] hover:text-white border border-[#D6B47A]/20 transition-all duration-300 group cursor-pointer"
-              >
-                <div className="w-10 h-10 rounded-xl bg-[#6E2634] text-[#D6B47A] group-hover:bg-white/10 flex items-center justify-center shrink-0">
-                  <MessageCircle className="w-5 h-5" />
-                </div>
-                <div>
-                  <span className="font-mono text-[10px] text-[#6E2634] group-hover:text-[#D6B47A] uppercase font-bold tracking-wider">
-                    WHATSAPP
-                  </span>
-                  <div className="font-mono text-xs sm:text-sm font-semibold truncate">
-                    {PORTFOLIO_PROFILE.phone}
-                  </div>
-                </div>
-              </a>
+              <div className="flex items-center gap-4 py-2 border-b border-[var(--line)]">
+                <span className="font-mono-code text-[0.66rem] tracking-[0.2em] uppercase text-[var(--dim)] w-20 flex-shrink-0">
+                  Phone
+                </span>
+                <a
+                  href={`tel:${portfolioData.phone.replace(/[^+\d]/g, '')}`}
+                  className="font-disp font-medium text-sm sm:text-base text-[var(--txt)] hover:text-[#ff7a29] transition-colors"
+                >
+                  {portfolioData.phone}
+                </a>
+              </div>
 
+              <div className="flex items-center gap-4 py-2 border-b border-[var(--line)]">
+                <span className="font-mono-code text-[0.66rem] tracking-[0.2em] uppercase text-[var(--dim)] w-20 flex-shrink-0">
+                  Location
+                </span>
+                <span className="font-disp font-medium text-sm sm:text-base text-[var(--txt)]">
+                  {portfolioData.location}
+                </span>
+              </div>
             </div>
 
+            {/* Socials */}
+            <div className="flex items-center gap-3 pt-4">
+              {portfolioData.socialLinks.map((social) => {
+                const getIcon = () => {
+                  switch (social.icon) {
+                    case 'github':
+                      return <Github className="w-4 h-4" />;
+                    case 'linkedin':
+                      return <Linkedin className="w-4 h-4" />;
+                    case 'instagram':
+                      return <Instagram className="w-4 h-4" />;
+                    default:
+                      return <Mail className="w-4 h-4" />;
+                  }
+                };
+
+                return (
+                  <a
+                    key={social.label}
+                    href={social.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={social.label}
+                    className="w-10 h-10 border border-[var(--line)] rounded-full flex items-center justify-center text-[var(--mut)] hover:text-[#ff7a29] hover:border-[#ff7a29] hover:-translate-y-1 transition-all duration-300"
+                  >
+                    {getIcon()}
+                  </a>
+                );
+              })}
+            </div>
           </div>
 
-          {/* Right Column: Clean Interactive Contact Form */}
-          <div className="lg:col-span-6 bg-[#F9F6F0] p-8 sm:p-10 rounded-3xl border border-[#D6B47A]/30 shadow-[0_20px_50px_rgba(18,13,14,0.06)]">
-            
-            <form onSubmit={handleSubmit} className="space-y-4">
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-mono text-xs font-bold text-[#120D0E] uppercase mb-1">
-                    Your Name
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Jane Doe"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl bg-white border border-[#120D0E]/15 focus:border-[#6E2634] text-[#120D0E] text-xs font-mono outline-none transition-colors"
-                  />
-                </div>
+          {/* Column 2: Minimalist Interactive Contact Form */}
+          <form
+            onSubmit={handleSubmit}
+            className="border border-[var(--line)] bg-[var(--panel)] p-6 sm:p-8 space-y-6 shadow-xl"
+            noValidate
+          >
+            {/* Name Field */}
+            <div className="relative">
+              <input
+                type="text"
+                id="fName"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                required
+                className="w-full bg-transparent border-0 border-b border-[var(--line2)] py-3 px-1 text-[var(--txt)] font-body text-base outline-none focus:border-[#ff7a29] transition-colors peer"
+                placeholder=" "
+              />
+              <label
+                htmlFor="fName"
+                className="absolute left-1 top-3 font-mono-code text-[0.68rem] tracking-[0.2em] uppercase text-[var(--dim)] pointer-events-none transition-all duration-300 peer-focus:-top-3.5 peer-focus:text-[0.58rem] peer-focus:text-[#ff7a29] peer-[:not(:placeholder-shown)]:-top-3.5 peer-[:not(:placeholder-shown)]:text-[0.58rem] peer-[:not(:placeholder-shown)]:text-[#ff7a29]"
+              >
+                Your Name
+              </label>
+            </div>
 
-                <div>
-                  <label className="block font-mono text-xs font-bold text-[#120D0E] uppercase mb-1">
-                    Your Email
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    placeholder="jane@company.com"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl bg-white border border-[#120D0E]/15 focus:border-[#6E2634] text-[#120D0E] text-xs font-mono outline-none transition-colors"
-                  />
-                </div>
+            {/* Email Field */}
+            <div className="relative">
+              <input
+                type="email"
+                id="fEmail"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                required
+                className="w-full bg-transparent border-0 border-b border-[var(--line2)] py-3 px-1 text-[var(--txt)] font-body text-base outline-none focus:border-[#ff7a29] transition-colors peer"
+                placeholder=" "
+              />
+              <label
+                htmlFor="fEmail"
+                className="absolute left-1 top-3 font-mono-code text-[0.68rem] tracking-[0.2em] uppercase text-[var(--dim)] pointer-events-none transition-all duration-300 peer-focus:-top-3.5 peer-focus:text-[0.58rem] peer-focus:text-[#ff7a29] peer-[:not(:placeholder-shown)]:-top-3.5 peer-[:not(:placeholder-shown)]:text-[0.58rem] peer-[:not(:placeholder-shown)]:text-[#ff7a29]"
+              >
+                Your Email
+              </label>
+            </div>
+
+            {/* Message Field */}
+            <div className="relative">
+              <textarea
+                id="fMsg"
+                value={formData.message}
+                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                required
+                rows={4}
+                className="w-full bg-transparent border-0 border-b border-[var(--line2)] py-3 px-1 text-[var(--txt)] font-body text-base outline-none focus:border-[#ff7a29] transition-colors resize-y min-h-[96px] peer"
+                placeholder=" "
+              />
+              <label
+                htmlFor="fMsg"
+                className="absolute left-1 top-3 font-mono-code text-[0.68rem] tracking-[0.2em] uppercase text-[var(--dim)] pointer-events-none transition-all duration-300 peer-focus:-top-3.5 peer-focus:text-[0.58rem] peer-focus:text-[#ff7a29] peer-[:not(:placeholder-shown)]:-top-3.5 peer-[:not(:placeholder-shown)]:text-[0.58rem] peer-[:not(:placeholder-shown)]:text-[#ff7a29]"
+              >
+                Your Message
+              </label>
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full flex items-center justify-center gap-3 font-mono-code text-xs tracking-[0.18em] uppercase py-4 bg-[#ff7a29] text-[#0b0b0e] font-semibold rounded-sm hover:bg-[var(--txt)] transition-colors duration-300 shadow-[0_10px_25px_-8px_rgba(255,122,41,0.5)]"
+            >
+              <span>{isSubmitting ? 'Transmitting...' : 'Send Message'}</span>
+              <Send className="w-4 h-4" />
+            </button>
+
+            {/* Form Feedback */}
+            {statusMsg && (
+              <div className="font-mono-code text-[0.68rem] tracking-wider text-[#ff7a29] text-center pt-1">
+                {statusMsg}
               </div>
+            )}
+          </form>
 
-              <div>
-                <label className="block font-mono text-xs font-bold text-[#120D0E] uppercase mb-1">
-                  Subject
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Security Assessment / Project Collaboration"
-                  value={formData.subject}
-                  onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-white border border-[#120D0E]/15 focus:border-[#6E2634] text-[#120D0E] text-xs font-mono outline-none transition-colors"
-                />
+          {/* Column 3: Real 3D Depth-Sorted Network Globe */}
+          <div className="w-full flex justify-center lg:justify-end">
+            <div className="relative w-full max-w-[360px] aspect-square">
+              <canvas ref={globeCanvasRef} className="w-full h-full block" />
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 font-mono-code text-[0.6rem] tracking-[0.25em] text-[var(--dim)] uppercase pointer-events-none text-center">
+                GLOBAL TELEMETRY NODE
               </div>
-
-              <div>
-                <label className="block font-mono text-xs font-bold text-[#120D0E] uppercase mb-1">
-                  Your Message
-                </label>
-                <textarea
-                  rows={4}
-                  required
-                  placeholder="Describe your technical requirements or project scope..."
-                  value={formData.message}
-                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-white border border-[#120D0E]/15 focus:border-[#6E2634] text-[#120D0E] text-xs font-mono outline-none transition-colors resize-none"
-                />
-              </div>
-
-              {isSubmitted && (
-                <div className="p-3 rounded-xl bg-[#10b981]/15 border border-[#10b981]/40 text-[#10b981] font-mono text-xs font-bold flex items-center gap-2 animate-fade-in">
-                  <CheckCircle2 className="w-4 h-4 shrink-0" />
-                  <span>Message dispatched successfully! I will respond promptly.</span>
-                </div>
-              )}
-
-              {/* Dual Action Buttons */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => handleSendGmail()}
-                  disabled={isSubmitting}
-                  className="w-full py-3.5 rounded-xl bg-[#6E2634] hover:bg-[#8C2735] text-white font-mono text-xs font-bold tracking-wider uppercase transition-all duration-300 shadow-[0_0_20px_rgba(110,38,52,0.4)] flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <Mail className="w-4 h-4 text-[#D6B47A]" />
-                  <span>{isSubmitting && submitMode === 'gmail' ? 'OPENING GMAIL...' : 'SEND VIA GMAIL'}</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleSendWhatsApp()}
-                  disabled={isSubmitting}
-                  className="w-full py-3.5 rounded-xl bg-[#25D366] hover:bg-[#20ba59] text-white font-mono text-xs font-bold tracking-wider uppercase transition-all duration-300 shadow-[0_0_20px_rgba(37,211,102,0.4)] flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <MessageCircle className="w-4 h-4 text-white" />
-                  <span>{isSubmitting && submitMode === 'whatsapp' ? 'OPENING WHATSAPP...' : 'WHATSAPP MESSAGE'}</span>
-                </button>
-              </div>
-
-              <p className="text-[11px] font-mono text-center text-[#120D0E]/60 pt-1">
-                Direct to <span className="font-bold text-[#6E2634]">{PORTFOLIO_PROFILE.email}</span> • Instant responses
-              </p>
-
-            </form>
-
+            </div>
           </div>
 
         </div>
       </div>
-
-      {/* 2. MASTER LUXURY FOOTER BANNER (Deep Wine & Dark with Portrait & Golden Orbit) */}
-      <footer className="w-full bg-[#120D0E] text-white py-16 px-6 sm:px-12 border-t border-[#D6B47A]/20 relative overflow-hidden">
-        
-        {/* Background ambient glow */}
-        <div className="absolute right-0 top-0 bottom-0 w-1/2 bg-[radial-gradient(ellipse_at_center,rgba(110,38,52,0.25)_0%,transparent_70%)] pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 items-center relative z-10">
-          
-          {/* Left Column: Brand & Bio */}
-          <div className="lg:col-span-6 space-y-4">
-            
-            <div className="flex items-center gap-3">
-              <span className="font-display font-black text-3xl text-white">
-                {PORTFOLIO_PROFILE.brandShort}
-              </span>
-              <span className="font-mono text-xs tracking-[0.25em] text-[#D6B47A] uppercase font-bold">
-                {PORTFOLIO_PROFILE.name}
-              </span>
-            </div>
-
-            <div className="space-y-1 font-mono text-xs text-white/80 tracking-wider uppercase">
-              <div>CYBER SECURITY ENGINEER</div>
-              <div>SOFTWARE DEVELOPER</div>
-              <div>DATA ANALYST</div>
-            </div>
-
-            <p className="text-xs sm:text-sm text-white/60 max-w-md leading-relaxed">
-              {PORTFOLIO_PROFILE.quote}
-            </p>
-
-            {/* Social Icons Dock */}
-            <div className="flex items-center gap-4 pt-2">
-              {socialLinks.map((item) => (
-                <a
-                  key={item.name}
-                  href={item.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-8 h-8 rounded-full bg-white/5 hover:bg-[#6E2634] border border-[#D6B47A]/30 text-[#D6B47A] hover:text-white flex items-center justify-center transition-colors cursor-pointer"
-                  title={item.name}
-                >
-                  {item.icon}
-                </a>
-              ))}
-            </div>
-
-          </div>
-
-          {/* Center/Right: Sathya Portrait with Gold Orbit Ring + Nav Links */}
-          <div className="lg:col-span-6 flex flex-col sm:flex-row items-center justify-end gap-8">
-            
-            {/* Quick Navigation Links */}
-            <nav className="flex flex-col items-start sm:items-end space-y-2.5 font-mono text-xs tracking-widest uppercase font-semibold text-white/70">
-              {['about', 'work', 'experience', 'skills', 'contact'].map((sec) => (
-                <button
-                  key={sec}
-                  onClick={() => {
-                    cyberAudio.playKeyClick();
-                    onNavigate(sec);
-                  }}
-                  className="hover:text-[#D6B47A] transition-colors cursor-pointer"
-                >
-                  {sec}
-                </button>
-              ))}
-            </nav>
-
-            {/* ProfileImage Component (Contact/Avatar Variant with Golden Orbit Ring) */}
-            <ProfileImage
-              variant="contact"
-              src={PORTFOLIO_PROFILE.images.footerPortrait}
-              alt="SATHYA SAI JS - Footer Profile"
-            />
-
-          </div>
-
-        </div>
-
-        {/* Copyright strip */}
-        <div className="max-w-7xl mx-auto pt-10 mt-10 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left text-white/40 font-mono text-[10px]">
-          <div>
-            © 2025 SATHYA SAI JS. All rights reserved.
-          </div>
-          <div>
-            THE ARCHITECT OF SECURE DIGITAL SYSTEMS
-          </div>
-        </div>
-
-      </footer>
-
     </section>
   );
 };

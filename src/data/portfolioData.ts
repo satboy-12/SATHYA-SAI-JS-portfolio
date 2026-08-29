@@ -1,529 +1,234 @@
-import profileImage from '../assets/profileImage';
-import projectAiLeadUi from '../assets/images/project_ai_lead_ui_1787069025615.jpg';
-import projectFirmwareUi from '../assets/images/project_firmware_ui_1787069039612.jpg';
-import archWorkspaceWarm from '../assets/images/arch_workspace_warm_1787069059927.jpg';
+import { PortfolioData, ProjectCaseStudy, Milestone, SkillItem, SocialLink } from '../types';
 
-export interface ProjectCaseStudy {
-  id: string;
-  num?: string;
-  number: string;
-  title: string;
-  category: string;
-  shortDesc: string;
-  description: string;
-  tags: string[];
-  metrics: { label: string; value: string }[];
-  image: string;
-  liveUrl?: string;
-  githubUrl: string;
-  architectureDetails: string[];
-}
-
-export interface SkillCategory {
-  id?: string;
-  name: string;
-  label?: string;
-  icon: string;
-  skills: { name: string; level: number; tag: string }[];
-}
-
-export interface CertificationItem {
-  id: string;
-  title: string;
-  category?: string;
-  issuer: string;
-  year: string;
-  badge: string;
-  credentialId: string;
-  description: string;
-  skills?: string[];
-}
-
-export type CertificateItem = CertificationItem;
-
-export const PORTFOLIO_PROFILE = {
-  // Identity & Core Info
-  name: "SATHYA SAI JS",
-  brandMark: "SJS",
-  brandShort: "SJS",
-  shortName: "Sathya",
-  signature: "Sathya Sai JS",
-  availability: "AVAILABLE FOR OPPORTUNITIES",
-  availabilityStatus: "AVAILABLE FOR OPPORTUNITIES",
-  
-  // Professional Titles
-  roles: [
-    "WEB & APP DEVELOPER",
-    "CYBER SECURITY ENGINEER",
-    "DATA ANALYST"
-  ],
-  roleTitle: "Web & App Developer @ BSRocks • Cyber Security Engineer • Data Analyst",
-  tagline: "I build high-performance web & mobile applications, secure system architectures, and data-driven digital experiences.",
-  quote: "I engineer intuitive web and app platforms, fortified by zero-trust security and powered by real-time data intelligence.",
-  
-  // Extended Bio from user's authentic portfolio
-  aboutHeadline: "Building Impactful Web & Mobile Apps with Fortified Security",
-  bio: "I'm a Web & App Developer at BSRocks, Cyber Security Engineer, and Data Analyst with a passion for building seamless digital products. At BSRocks, I architect modern responsive web platforms and cross-platform mobile apps. I operate at the intersection of frontend engineering, mobile development, cybersecurity defense, and data analytics to turn complex requirements into elegant, high-impact digital solutions.",
-  
-  // Contact & Location
-  email: "sathyasaijs12@gmail.com",
-  phone: "+91 73056 62449",
-  whatsappNumber: "+91 73056 62449",
-  whatsappRaw: "917305662449",
-  whatsapp: "https://wa.me/917305662449",
+export const portfolioData: PortfolioData = {
+  firstName: "SATHYA SAI",
+  lastName: "JS",
+  rolePrimary: "Cyber Security Engineer",
+  roleSecondary: "Software Developer",
+  roleExtra: "Data Analyst",
+  intro: "Motivated Security Engineering student with hands-on experience across software development, data analytics and network security — passionate about application security, penetration testing and secure-by-design outcomes.",
+  logoInitials: "SS.",
+  fullName: "Sathya Sai J S",
+  age: "--",
   location: "Chennai, Tamil Nadu, India",
-  linkedin: "https://www.linkedin.com/in/sathya-sai-j-s-1187b5399?utm_source=share_via&utm_content=profile&utm_medium=member_android",
-  instagram: "https://www.instagram.com/sat_boy_21?igsi=eWJhNnZreXI5Njhx",
-  github: "https://github.com/satboy-12",
-  resumeUrl: "#download-cv",
-
-  socials: {
-    linkedin: "https://www.linkedin.com/in/sathya-sai-j-s-1187b5399?utm_source=share_via&utm_content=profile&utm_medium=member_android",
-    github: "https://github.com/satboy-12",
-    instagram: "https://www.instagram.com/sat_boy_21?igsi=eWJhNnZreXI5Njhx",
-    whatsapp: "https://wa.me/917305662449",
-    email: "mailto:sathyasaijs12@gmail.com",
-    gmail: "https://mail.google.com/mail/?view=cm&fs=1&to=sathyasaijs12@gmail.com"
-  },
-
-  // Helper generators for instant contact
-  getGmailUrl: (subject = "Project Inquiry / Collaboration", body = "") => {
-    const encodedSubject = encodeURIComponent(subject);
-    const encodedBody = encodeURIComponent(body);
-    return `https://mail.google.com/mail/?view=cm&fs=1&to=sathyasaijs12@gmail.com&su=${encodedSubject}&body=${encodedBody}`;
-  },
-
-  getMailtoUrl: (subject = "Project Inquiry / Collaboration", body = "") => {
-    const encodedSubject = encodeURIComponent(subject);
-    const encodedBody = encodeURIComponent(body);
-    return `mailto:sathyasaijs12@gmail.com?subject=${encodedSubject}&body=${encodedBody}`;
-  },
-
-  getWhatsAppUrl: (text = "Hi Sathya Sai JS, I came across your portfolio and would like to connect!") => {
-    const encodedText = encodeURIComponent(text);
-    return `https://wa.me/917305662449?text=${encodedText}`;
-  },
-
-  // Key Numerical Stats
-  stats: [
-    { value: "3+", label: "YEARS EXPERIENCE", desc: "Web, app & security engineering" },
-    { value: "25+", label: "PROJECTS DELIVERED", desc: "Production web, mobile apps & systems" },
-    { value: "100%", label: "CLIENT SATISFACTION", desc: "High performance & robust uptime" }
-  ],
-
-  // 4 Core Philosophy Pillars
-  pillars: [
+  email: "sathyasaijs12@gmail.com",
+  phone: "+91 7305662449",
+  photo: "/images/sathya-portfolio-photo.jpg",
+  secondaryPhoto: "/images/sathya-image-1.jpg",
+  aboutText: "I'm a B.E. Cyber Security student at Sri Ram Engineering College with a diploma in Electronics & Communication and hands-on industry exposure spanning security training support, data analysis and multiple internships in network security and blockchain. My focus: finding vulnerabilities before attackers do, and building systems designed to be secure from day one.",
+  resumeUrl: "#",
+  skills: [
     {
-      id: "develop",
-      number: "01",
-      title: "BUILD & SHIP",
-      description: "I architect high-performance web applications and mobile apps with clean, scalable codebases."
+      icon: "shield",
+      title: "Cyber Security",
+      desc: "Network & information security, vulnerability assessment, threat analysis, risk assessment and security fundamentals.",
+      tags: ["Threat Analysis", "Vulnerability Assessment", "Risk Assessment", "Network Defense", "Zero-Trust"]
     },
     {
-      id: "secure",
-      number: "02",
-      title: "FORTIFY",
-      description: "I build systems that protect and defend against modern cyber threats with zero-trust defense."
+      icon: "code",
+      title: "Programming",
+      desc: "Python, Java, C, C++ and SQL — across scripting, backend logic and secure application development.",
+      tags: ["Python", "Java", "C / C++", "SQL", "Secure Scripting", "Backend Logic"]
     },
     {
-      id: "analyze",
-      number: "03",
-      title: "ANALYZE",
-      description: "I extract valuable insights from telemetry and data to power executive decision-making."
+      icon: "mobile",
+      title: "Software Development",
+      desc: "Building working tools end-to-end, from Streamlit platforms to structured documentation and tested implementations.",
+      tags: ["Streamlit", "Automation", "Tooling", "Documentation", "Testing", "System Integration"]
     },
     {
-      id: "innovate",
-      number: "04",
-      title: "INNOVATE",
-      description: "I explore cutting-edge technologies to create lasting, user-centric positive impact."
+      icon: "chart",
+      title: "Data Analytics",
+      desc: "Power BI dashboards, SQL-based data preparation, visualization and insights that drive business decisions.",
+      tags: ["Power BI", "SQL Data Prep", "KPI Dashboards", "Data Modeling", "Business Intelligence"]
+    },
+    {
+      icon: "rocket",
+      title: "Security Testing Tools",
+      desc: "Wireshark, Kali, Burp Suite — traffic analysis, evidence collection and penetration-testing readiness.",
+      tags: ["Wireshark", "Kali Linux", "Burp Suite", "Traffic Analysis", "Evidence Collection", "Pen-Testing"]
+    },
+    {
+      icon: "megaphone",
+      title: "Workflow & Tooling",
+      desc: "Git, GitHub, MySQL, VS Code and Jupyter Notebook with disciplined reporting and cross-functional collaboration.",
+      tags: ["Git & GitHub", "MySQL", "VS Code", "Jupyter Notebook", "Structured Reporting"]
     }
   ],
-
-  // Tech Stack Logos / Badges
-  technologiesWorkedWith: [
-    { name: "React & React Native", category: "Web & Mobile" },
-    { name: "TypeScript & JavaScript", category: "Frontend Engine" },
-    { name: "Node.js & Express", category: "Backend REST APIs" },
-    { name: "Tailwind CSS", category: "Design Systems" },
-    { name: "Python", category: "Core Backend & AI" },
-    { name: "Linux Kali / Ubuntu", category: "Security & Hardening" },
-    { name: "Power BI", category: "Business Intelligence" },
-    { name: "SQL & PostgreSQL", category: "Relational Databases" }
-  ],
-
-  // My Journey / Timeline
-  timeline: [
-    {
-      period: "2025 - Present",
-      degree: "Web & App Developer",
-      institution: "BSRocks",
-      location: "Chennai, India",
-      highlight: "Leading frontend web engineering and cross-platform mobile application development. Building high-performance responsive interfaces in React/TypeScript, integrating backend REST APIs, optimizing mobile touch UX, and implementing secure state architecture."
-    },
-    {
-      period: "2025 - Present",
-      degree: "Technical Associate",
-      institution: "Braiil Academy",
-      location: "Chennai, India",
-      highlight: "Providing technical academic support to students & faculty, developing educational materials, assisting in data management, and automating learning platforms."
-    },
-    {
-      period: "2024 - 2027",
-      degree: "B.E. Cyber Security",
-      institution: "Sri Ram Engineering College",
-      location: "Chennai, India",
-      highlight: "Specialized focus on network defense, penetration testing, cryptography and secure software lifecycle."
-    },
-    {
-      period: "2020 - 2023",
-      degree: "Diploma in ECE",
-      institution: "CPCL Polytechnic College",
-      location: "Chennai, India",
-      highlight: "Electronics & Communication Engineering foundations, microcontroller systems and hardware protocols."
-    }
-  ],
-
-  // Toolkit / Skills Domain
-  toolkitCategories: [
-    {
-      id: "web_app_development",
-      name: "Web & App Dev",
-      label: "Web & App Dev",
-      count: 8,
-      skills: [
-        "React.js & Vite Architecture",
-        "React Native Mobile Apps",
-        "TypeScript & JavaScript (ES6+)",
-        "Tailwind CSS & UI/UX Systems",
-        "Node.js & Express REST APIs",
-        "State Management (Redux/Zustand)",
-        "Mobile Responsive Design",
-        "CI/CD Deployment & Git"
-      ]
-    },
-    {
-      id: "cyber_security",
-      name: "Cyber Security",
-      label: "Cyber Security",
-      count: 9,
-      skills: [
-        "Network Security",
-        "Web Application Security",
-        "Malware Analysis",
-        "Security Automation",
-        "Blockchain Security",
-        "Cloud Security",
-        "Cyber Forensics",
-        "Ethical Hacking",
-        "Security Fundamentals"
-      ]
-    },
-    {
-      id: "data_analysis",
-      name: "Data Analysis",
-      label: "Data Analysis",
-      count: 6,
-      skills: [
-        "Power BI Dashboards",
-        "Data Analytics Certification",
-        "Pandas & NumPy",
-        "Plotly Data Visualizations",
-        "DAX Modeling",
-        "Statistical Intelligence"
-      ]
-    },
-    {
-      id: "programming",
-      name: "Programming",
-      label: "Programming",
-      count: 6,
-      skills: [
-        "Python",
-        "JavaScript / TypeScript",
-        "C / C++",
-        "Java",
-        "Bash / Shell Scripting",
-        "SQL Query Optimization"
-      ]
-    },
-    {
-      id: "tools",
-      name: "Tools & Infrastructure",
-      label: "Tools & Infrastructure",
-      count: 6,
-      skills: [
-        "Wireshark Packet Analysis",
-        "Burp Suite Professional",
-        "Metasploit Framework",
-        "Nmap Security Scanner",
-        "Git & GitHub Repositories",
-        "Linux Kali & Ubuntu"
-      ]
-    }
-  ],
-
-  // Featured Projects / Selected Work
   projects: [
     {
-      id: "bsrocks-enterprise-web-platform",
-      num: "01",
+      id: "lead-classification-system",
       number: "01",
-      title: "BSROCKS ENTERPRISE WEB PLATFORM",
-      category: "WEB DEVELOPMENT • REACT • BSRocks",
-      shortDesc: "High-performance enterprise web application engineered at BSRocks featuring interactive client interfaces, modular components, and real-time data sync.",
-      description: "A flagship production web platform engineered for BSRocks. Features component-driven architecture with React and TypeScript, sub-millisecond route transitions with Vite, Tailwind CSS design system, and secure JWT authentication pipelines.",
-      tags: ["React", "TypeScript", "Tailwind CSS", "REST API", "BSRocks", "Vite"],
+      name: "Lead Classification Management System",
+      title: "Lead Classification Management System",
+      subtitle: "Python · Automation · Analytical Platform",
+      category: "Python · Automation",
+      desc: "Lead classification platform for educational institutions covering all 38 districts of Tamil Nadu. Automated categorization rules, validation checks, dashboard visualizations and analytical reports for faster responsibility-based decisions.",
+      description: "Lead classification platform for educational institutions covering all 38 districts of Tamil Nadu. Automated categorization rules, validation checks, dashboard visualizations and analytical reports for faster responsibility-based decisions.",
+      longDescription: "Architected an automated multi-district educational lead classification engine in Python and Streamlit. The system implements rule-based decision trees, automated input sanitization, dynamic geographical filters across Tamil Nadu, and exportable executive intelligence summaries.",
+      image: "/images/project_ai_lead_ui_1787069025615.jpg",
+      tags: ["Python", "Streamlit", "Excel", "Automation", "Data Validation"],
+      tech: ["Python", "Streamlit", "Excel", "Automation"],
       metrics: [
-        { label: "Lighthouse Performance", value: "99/100" },
-        { label: "Load Time", value: "< 0.8s" },
-        { label: "Uptime Metric", value: "99.98%" }
+        { label: "DISTRICT COVERAGE", value: "38 Districts" },
+        { label: "DECISION LATENCY", value: "5x Faster" },
+        { label: "AUTOMATION RATE", value: "100% Rules" }
       ],
-      image: archWorkspaceWarm,
-      liveUrl: "https://bsrocks.com",
-      githubUrl: "https://github.com/satboy-12/bsrocks-web-platform",
-      architectureDetails: [
-        "Modular React component design system with reusable atomic patterns",
-        "Type-safe data contracts across frontend views and REST backend microservices",
-        "Optimized asset delivery pipeline and code-splitting achieving sub-second initial loads"
-      ]
+      highlights: [
+        "Automated categorization rules and validation checks across all 38 districts of Tamil Nadu",
+        "Streamlit-based responsive dashboard with real-time query filtering and data hygiene pipelines",
+        "Automated analytical report generation enabling faster responsibility-based institutional choices"
+      ],
+      githubUrl: "https://github.com/satboy-12"
     },
     {
-      id: "bsrocks-mobile-app",
-      num: "02",
+      id: "blockchain-firmware-update",
       number: "02",
-      title: "BSROCKS CROSS-PLATFORM MOBILE APP",
-      category: "MOBILE APP • REACT NATIVE • BSRocks",
-      shortDesc: "Native-grade cross-platform mobile application developed at BSRocks delivering fluid user interactions, push notifications, and offline caching.",
-      description: "A comprehensive mobile experience engineered for iOS and Android platforms at BSRocks. Incorporates smooth 60fps gesture navigation, biometric user login, local offline state synchronization, and real-time client notification services.",
-      tags: ["React Native", "Mobile App", "TypeScript", "BSRocks", "Push Notifications"],
+      name: "Blockchain Safe Firmware Update System",
+      title: "Blockchain Safe Firmware Update System",
+      subtitle: "Vehicular Security · SIMATS Conference Research",
+      category: "Blockchain · Cyber Security · Research",
+      desc: "Secure blockchain-based firmware update mechanism for modern vehicles with tamper-evident and integrity controls. Presented as a research paper at SIMATS Engineering Conference.",
+      description: "Secure blockchain-based firmware update mechanism for modern vehicles with tamper-evident and integrity controls. Presented as a research paper at SIMATS Engineering Conference.",
+      longDescription: "Authored and presented academic research on zero-trust over-the-air (OTA) automotive firmware dissemination. The architecture employs smart contract validation and cryptographic hash chain verification to prevent malicious firmware injection on vehicular electronic control units (ECUs).",
+      image: "/images/project_firmware_ui_1787069039612.jpg",
+      tags: ["Blockchain", "Cyber Security", "Research", "Smart Contracts", "Cryptographic Verification"],
+      tech: ["Blockchain", "Cyber Security", "Research", "Smart Contracts"],
       metrics: [
-        { label: "Frame Rate", value: "60 FPS" },
-        { label: "Crash-Free Rate", value: "99.9%" },
-        { label: "Offline Storage", value: "SQLite Sync" }
+        { label: "CONFERENCE", value: "SIMATS 2024" },
+        { label: "INTEGRITY GUARANTEE", value: "Tamper-Evident" },
+        { label: "TARGET DOMAIN", value: "Vehicular ECUs" }
       ],
-      image: projectAiLeadUi,
-      liveUrl: "https://bsrocks.com/app",
-      githubUrl: "https://github.com/satboy-12/bsrocks-mobile-app",
-      architectureDetails: [
-        "Cross-platform codebase utilizing React Native and TypeScript",
-        "Robust offline-first architecture with localized SQLite caching and sync queue",
-        "Native bridge integrations for biometric authentication and push notifications"
-      ]
+      highlights: [
+        "Published & presented research paper at the prestigious SIMATS Engineering Conference",
+        "Tamper-evident hash validation ensuring firmware authenticity prior to vehicular execution",
+        "Decentralized ledger consensus preventing single-point-of-failure OTA update attacks"
+      ],
+      githubUrl: "https://github.com/satboy-12"
     },
     {
-      id: "ai-lead-classification",
-      num: "03",
+      id: "data-analytics-dashboard",
       number: "03",
-      title: "AI LEAD CLASSIFICATION PLATFORM",
-      category: "AI • DATA ANALYTICS • PYTHON",
-      shortDesc: "Intelligent system to validate, classify and analyze large lead datasets with advanced analytics.",
-      description: "An intelligent data engine built to ingest, sanitize, and classify prospective lead datasets in real-time. Features interactive visual telemetry, anomaly detection, and automated predictive scoring models.",
-      tags: ["Python", "Streamlit", "Pandas", "Plotly", "AI Classification"],
+      name: "Data Analytics Dashboard",
+      title: "Data Analytics Dashboard",
+      subtitle: "Business Intelligence & SQL-Driven KPI Modeling",
+      category: "Power BI · SQL",
+      desc: "Interactive business dashboards enabling faster KPI monitoring with clear filters and drill-down views. Actionable insights generated from large datasets via SQL-based preparation and validation.",
+      description: "Interactive business dashboards enabling faster KPI monitoring with clear filters and drill-down views. Actionable insights generated from large datasets via SQL-based preparation and validation.",
+      longDescription: "Engineered high-density analytical dashboards in Power BI and SQL, transforming transactional logs into intuitive executive summaries. Implemented robust multi-table relational models, automated data cleansing, and parametric drill-down hierarchies.",
+      image: "/images/cyber_workspace_1787052364862.jpg",
+      tags: ["Power BI", "SQL", "Excel", "DAX", "Data Modeling"],
+      tech: ["Power BI", "SQL", "Excel", "Data Modeling"],
       metrics: [
-        { label: "Data Throughput", value: "50k records/min" },
-        { label: "Classification Accuracy", value: "98.4%" },
-        { label: "Processing Latency", value: "< 240ms" }
+        { label: "KPI QUERY SPEED", value: "Sub-Second" },
+        { label: "DATA PREPARATION", value: "SQL Pipeline" },
+        { label: "METRIC ACCURACY", value: "100% Verified" }
       ],
-      image: projectAiLeadUi,
-      githubUrl: "https://github.com/satboy-12/ai-lead-analysis-bot",
-      architectureDetails: [
-        "Vectorized preprocessing using Pandas and NumPy",
-        "Interactive analytics dashboards powered by Plotly & Streamlit",
-        "REST API microservice for seamless CRM and database sync"
-      ]
+      highlights: [
+        "Interactive KPI monitoring panels with multi-dimensional slicers and cross-filtering",
+        "SQL-based dataset extraction, deduplication, and relational star-schema preparation",
+        "Actionable business intelligence reporting directly supporting stakeholder decision-making"
+      ],
+      githubUrl: "https://github.com/satboy-12"
     },
     {
-      id: "blockchain-secure-firmware",
-      num: "04",
+      id: "network-security-analysis",
       number: "04",
-      title: "BLOCKCHAIN SECURE FIRMWARE UPDATE SYSTEM",
-      category: "BLOCKCHAIN • SECURITY • EMBEDDED",
-      shortDesc: "Blockchain-enhanced secure firmware update system with cryptographic hash verification.",
-      description: "A tamper-evident firmware deployment protocol leveraging decentralized cryptographic consensus to guarantee zero unauthorized microcode execution on IoT controllers.",
-      tags: ["Python", "Blockchain", "Security", "Cryptographic Signatures"],
+      name: "Network Security Analysis",
+      title: "Network Security Analysis",
+      subtitle: "Deep Packet Inspection & Threat Assessment",
+      category: "Wireshark · Kali Linux",
+      desc: "Traffic analysis and security assessment identifying suspicious patterns in simulated environments. Vulnerabilities documented with prioritized security improvements aligned to threat-analysis methodology.",
+      description: "Traffic analysis and security assessment identifying suspicious patterns in simulated environments. Vulnerabilities documented with prioritized security improvements aligned to threat-analysis methodology.",
+      longDescription: "Conducted simulated penetration testing and deep packet captures using Kali Linux and Wireshark. Synthesized detailed vulnerability matrices, identified suspicious payload anomalies, and formulated prioritized mitigation roadmaps.",
+      image: "/images/cyber_shield_core_1787052350028.jpg",
+      tags: ["Wireshark", "Kali Linux", "Threat Analysis", "Packet Capture", "Vulnerability Assessment"],
+      tech: ["Wireshark", "Kali Linux", "Threat Analysis", "Packet Capture"],
       metrics: [
-        { label: "Tamper Immunity", value: "100%" },
-        { label: "Node Verification", value: "12 Validator Nodes" },
-        { label: "Rollback Protection", value: "Enforced" }
+        { label: "ANALYSIS DEPTH", value: "L2–L7 Telemetry" },
+        { label: "TOOL SUITE", value: "Kali & Wireshark" },
+        { label: "REMEDIATION", value: "Prioritized Plan" }
       ],
-      image: projectFirmwareUi,
-      githubUrl: "https://github.com/satboy-12/blockchain-secure-firmware",
-      architectureDetails: [
-        "ECDSA digital signature validation for firmware binaries",
-        "Smart contract registry for firmware hash immutable logs",
-        "Hardware-level anti-rollback and integrity checks"
-      ]
-    },
-    {
-      id: "data-analytics-powerbi",
-      num: "05",
-      number: "05",
-      title: "POWER BI DATA ANALYTICS SUITE",
-      category: "DATA ANALYTICS • BUSINESS INTELLIGENCE",
-      shortDesc: "Collection of Power BI dashboards and data analytics projects for high-impact decision support.",
-      description: "Multi-dimensional analytical dashboards processing enterprise metrics, customer conversion cohorts, and operational health KPIs with DAX-optimized calculations.",
-      tags: ["Power BI", "DAX", "SQL", "Data Modeling"],
-      metrics: [
-        { label: "Dashboards Built", value: "15+ Suites" },
-        { label: "Query Optimization", value: "4x Faster" },
-        { label: "Visual Reports", value: "Automated" }
+      highlights: [
+        "Packet capture telemetry analysis uncovering hidden anomalous payloads and spoofed headers",
+        "Systematic threat analysis and attack-vector classification across simulated networks",
+        "Comprehensive vulnerability documentation with immediate actionable remediation steps"
       ],
-      image: archWorkspaceWarm,
-      githubUrl: "https://github.com/satboy-12/data-analytics-powerbi",
-      architectureDetails: [
-        "Advanced DAX measures for dynamic time-intelligence calculations",
-        "Star-schema relational data model with normalized tables",
-        "Automated data refresh schedules connected to SQL databases"
-      ]
-    },
-    {
-      id: "cyber-security-lab",
-      num: "06",
-      number: "06",
-      title: "CYBER SECURITY LAB & EXPLOIT FRAMEWORK",
-      category: "OFFENSIVE SECURITY • AUTOMATION",
-      shortDesc: "Collection of cybersecurity testing tools, automated scanning scripts, and penetration testing labs.",
-      description: "A comprehensive laboratory repository featuring custom network scanners, payload testing harnesses, and automated vulnerability validation modules.",
-      tags: ["Security", "Python", "Bash", "Kali Linux"],
-      metrics: [
-        { label: "Automated Test Modules", value: "35+ Scripts" },
-        { label: "OWASP Coverage", value: "Top 10" },
-        { label: "Recon Automation", value: "Instant" }
-      ],
-      image: projectAiLeadUi,
-      githubUrl: "https://github.com/satboy-12/cyber-security-lab",
-      architectureDetails: [
-        "Custom Python scripts for port scanning and banner grabbing",
-        "Automated reporting engine generating CVE vulnerability matrices",
-        "Isolated Docker containers simulating vulnerable target topologies"
-      ]
+      githubUrl: "https://github.com/satboy-12"
     }
   ],
-
-  // Open Source Repositories
-  openSourceRepos: [
+  experience: [
     {
-      id: "repo_bsrocks_web",
-      name: "bsrocks-web-platform",
-      description: "Enterprise web application built for BSRocks with React, TypeScript and Tailwind CSS.",
-      tags: ["React", "TypeScript", "Tailwind", "BSRocks"],
-      stars: 52,
-      forks: 24,
-      url: "https://github.com/satboy-12/bsrocks-web-platform"
+      year: "2020",
+      title: "Diploma — ECE, CPCL Polytechnic College",
+      subtitle: "Electronics & Communication Engineering",
+      desc: "Completed Diploma in Electronics and Communication Engineering with 86%.",
+      description: "Completed Diploma in Electronics and Communication Engineering with 86%. Built foundational expertise in digital electronics, microprocessors, signal processing, and communication protocols.",
+      active: false
     },
     {
-      id: "repo_bsrocks_app",
-      name: "bsrocks-mobile-app",
-      description: "Cross-platform iOS and Android application with real-time sync and smooth touch UX.",
-      tags: ["React Native", "TypeScript", "Mobile", "BSRocks"],
-      stars: 48,
-      forks: 19,
-      url: "https://github.com/satboy-12/bsrocks-mobile-app"
+      year: "2023",
+      title: "Data Analysis & Testing Associate",
+      subtitle: "Operations & Fraud Prevention",
+      desc: "End-to-end analysis and testing supporting operations — improved customer satisfaction by 90% and cut fraudulent charges by 50% through pattern analysis.",
+      description: "End-to-end analysis and testing supporting operations — improved customer satisfaction by 90% and cut fraudulent charges by 50% through pattern analysis.",
+      active: false
     },
     {
-      id: "repo_1",
-      name: "ai-lead-analysis-bot",
-      description: "AI powered lead analysis and classification platform with interactive visual analytics.",
-      tags: ["Python", "Streamlit", "Pandas"],
-      stars: 45,
-      forks: 18,
-      url: "https://github.com/satboy-12/ai-lead-analysis-bot"
+      year: "2024",
+      title: "Cyber Security Intern — Prodigy Infotech",
+      subtitle: "Threat Analysis & Vulnerability Assessment",
+      desc: "Threat analysis, security awareness activities and vulnerability-assessment exposure, validating risks through structured testing. Also interned in Network Security (Red Hat) and Blockchain.",
+      description: "Threat analysis, security awareness activities and vulnerability-assessment exposure, validating risks through structured testing. Also interned in Network Security (Red Hat) and Blockchain.",
+      active: false
     },
     {
-      id: "repo_2",
-      name: "blockchain-secure-firmware",
-      description: "Blockchain enhanced secure firmware update system with cryptographic validation.",
-      tags: ["Python", "Blockchain", "Security"],
-      stars: 32,
-      forks: 12,
-      url: "https://github.com/satboy-12/blockchain-secure-firmware"
+      year: "2024",
+      title: "B.E. Cyber Security — Sri Ram Engineering College",
+      subtitle: "Space Technology Domain • Smart India Hackathon",
+      desc: "Began Bachelor of Engineering in Cyber Security; national-level Smart India Hackathon participant in the Space Technology domain.",
+      description: "Began Bachelor of Engineering in Cyber Security; national-level Smart India Hackathon participant in the Space Technology domain.",
+      active: false
     },
     {
-      id: "repo_3",
-      name: "data-analytics-powerbi",
-      description: "Power BI dashboards and data analytics projects for business intelligence.",
-      tags: ["Power BI", "DAX", "SQL"],
-      stars: 28,
-      forks: 9,
-      url: "https://github.com/satboy-12/data-analytics-powerbi"
-    },
-    {
-      id: "repo_4",
-      name: "cyber-security-lab",
-      description: "Collection of cybersecurity testing tools, automation scripts, and defense labs.",
-      tags: ["Security", "Python", "Bash"],
-      stars: 36,
-      forks: 14,
-      url: "https://github.com/satboy-12/cyber-security-lab"
-    }
-  ],
-
-  // Verified Certifications
-  certifications: [
-    {
-      id: "cert_power_bi",
-      title: "Power BI Data Analytics",
-      category: "DATA ANALYTICS",
-      issuer: "Microsoft / Authorized Certification",
       year: "2025",
-      badge: "DATA SPECIALIST",
-      credentialId: "MS-PBI-99410",
-      description: "Demonstrated expertise in enterprise business intelligence, DAX modeling, data shaping, and analytical visual reporting.",
-      skills: ["Power BI", "DAX", "Data Modeling", "Business Intelligence"]
+      title: "Technical Associate — Braiil Academy",
+      subtitle: "Cyber Security & Analytics Mentorship",
+      desc: "Supporting security-aligned technical training, software development guidance and academic project implementation across cyber security and analytics tracks.",
+      description: "Supporting security-aligned technical training, software development guidance and academic project implementation across cyber security and analytics tracks.",
+      active: false
     },
     {
-      id: "cert_data_analytics",
-      title: "Data Analytics Certification",
-      category: "DATA SCIENCE",
-      issuer: "Google / Industry Accredited",
-      year: "2024",
-      badge: "ANALYTICS CORE",
-      credentialId: "GOOG-DA-77218",
-      description: "Comprehensive credential covering statistical analysis, exploratory data analysis, SQL querying, and predictive visualization.",
-      skills: ["SQL", "Data Cleaning", "Data Analytics", "Visualization"]
-    },
-    {
-      id: "cert_python",
-      title: "Python Programming",
-      category: "PROGRAMMING",
-      issuer: "Python Institute / Certified Associate",
-      year: "2024",
-      badge: "CODE MASTERY",
-      credentialId: "PY-PCAP-44091",
-      description: "Core fluency in object-oriented programming, data structures, algorithm optimization, and automated security scripting.",
-      skills: ["Python", "Algorithms", "Automation", "OOP"]
-    },
-    {
-      id: "cert_cyber_sec",
-      title: "Cyber Security Fundamentals",
-      category: "CYBER SECURITY",
-      issuer: "EC-Council & Cisco Networking",
-      year: "2024",
-      badge: "SECURITY VERIFIED",
-      credentialId: "ECC-CS-88301",
-      description: "Specialized training in defense-in-depth security principles, network vulnerability scanning, cryptography, and access controls.",
-      skills: ["Network Security", "Ethical Hacking", "Cryptography", "Vulnerability Scanning"]
+      year: "Now",
+      title: "Toward Security Engineering",
+      subtitle: "Application Security & Pentesting",
+      desc: "Seeking internship and entry-level opportunities in Cyber Security and Software Engineering — application security, pentesting and secure-by-design work.",
+      description: "Seeking internship and entry-level opportunities in Cyber Security and Software Engineering — application security, pentesting and secure-by-design work.",
+      active: true
     }
   ],
-
-  images: {
-    heroPortrait: profileImage,
-    aboutPortrait: profileImage,
-    footerPortrait: profileImage,
-    archWorkspace: archWorkspaceWarm,
-    aiLeadUi: projectAiLeadUi,
-    firmwareUi: projectFirmwareUi
-  }
+  socialLinks: [
+    { label: "GitHub", icon: "github", url: "https://github.com/satboy-12" },
+    { label: "LinkedIn", icon: "linkedin", url: "https://linkedin.com/in/sathyasaijs" },
+    { label: "Email", icon: "mail", url: "mailto:sathyasaijs12@gmail.com" }
+  ]
 };
 
-// Aliases for backward compatibility
-export const SELECTED_PROJECTS = PORTFOLIO_PROFILE.projects;
-export const CERTIFICATIONS_LIST = PORTFOLIO_PROFILE.certifications;
-export const GITHUB_REPOSITORIES = PORTFOLIO_PROFILE.openSourceRepos;
-export const SKILL_CATEGORIES: SkillCategory[] = PORTFOLIO_PROFILE.toolkitCategories.map(c => ({
-  id: c.id,
-  name: c.name,
-  label: c.name,
-  icon: 'Shield',
-  skills: c.skills.map(s => ({ name: s, level: 90, tag: c.name }))
-}));
+export const PORTFOLIO_PROFILE = {
+  ...portfolioData,
+  name: portfolioData.fullName,
+  role: `${portfolioData.rolePrimary} • ${portfolioData.roleExtra}`,
+  bio: portfolioData.intro,
+  profileImage: portfolioData.photo,
+  milestones: portfolioData.experience,
+  github: "https://github.com/satboy-12",
+  linkedin: "https://linkedin.com/in/sathyasaijs",
+  instagram: "https://linkedin.com/in/sathyasaijs",
+  whatsapp: "https://wa.me/917305662449",
+  titles: [
+    portfolioData.rolePrimary,
+    portfolioData.roleSecondary,
+    portfolioData.roleExtra
+  ]
+};
+
